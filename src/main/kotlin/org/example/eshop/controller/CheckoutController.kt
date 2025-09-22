@@ -6,6 +6,7 @@ import org.example.eshop.service.CheckoutService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import jakarta.validation.Valid
 
 @RestController
 @RequestMapping("/api")
@@ -16,7 +17,7 @@ class CheckoutController(
     @PostMapping("/checkout/{cartId}/submit")
     fun submitCheckout(
         @PathVariable cartId: Long,
-        @RequestBody request: CheckoutRequest
+        @Valid @RequestBody request: CheckoutRequest
     ): ResponseEntity<OrderDto> {
         return try {
             val order = checkoutService.submitCheckout(cartId, request.email, request.address)

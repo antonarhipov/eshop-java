@@ -4,6 +4,8 @@ import org.example.eshop.entity.Order
 import org.example.eshop.entity.OrderStatus
 import org.example.eshop.entity.PaymentStatus
 import org.example.eshop.entity.FulfillmentStatus
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -40,4 +42,17 @@ interface OrderRepository : JpaRepository<Order, Long> {
     
     @Query("SELECT o FROM Order o WHERE o.paymentStatus = 'PAID' AND o.fulfillmentStatus = 'UNFULFILLED'")
     fun findPaidUnfulfilledOrders(): List<Order>
+    
+    @Query("""
+        SELECT o FROM Order o LEFT JOIN FETCH o.items 
+        WHERE (:status IS NULL OR o.status = :status)
+        AND (:paymentStatus IS NULL OR o.paymentStatus = :paymentStatus)
+        AND (:fulfillmentStatus IS NULL OR o.fulfillmentStatus = :fulfillmentStatus)
+    """)
+    fun findAllWithFilters(
+        @Param("status") status: OrderStatus?,
+        @Param("paymentStatus") paymentStatus: PaymentStatus?,
+        @Param("fulfillmentStatus") fulfillmentStatus: FulfillmentStatus?,
+        pageable: Pageable
+    ): Page<Order>
 }

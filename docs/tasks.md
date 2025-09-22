@@ -127,37 +127,37 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 ## Phase 6 — Admin APIs (Catalog + Orders) [P0]
 
 ### Admin Authentication & Security
-- [ ] 65. Configure Spring Security with form login [P0] [R13]
-- [ ] 66. Create ADMIN role and user management [P0] [R13]
-- [ ] 67. Secure all /api/admin/* endpoints with ROLE_ADMIN [P0] [R13]
-- [ ] 68. Enable CSRF protection for admin operations [P0] [R13]
+- [x] 65. Configure Spring Security with form login [P0] [R13]
+- [x] 66. Create ADMIN role and user management [P0] [R13]
+- [x] 67. Secure all /api/admin/* endpoints with ROLE_ADMIN [P0] [R13]
+- [x] 68. Enable CSRF protection for admin operations [P0] [R13]
 
 ### Admin Catalog Management
-- [ ] 69. Implement POST /api/admin/products [P0] [R8]
-- [ ] 70. Implement POST /api/admin/variants [P0] [R8]
-- [ ] 71. Implement POST /api/admin/lots [P0] [R8]
-- [ ] 72. Add PATCH/DELETE endpoints for catalog entities [P0] [R8]
-- [ ] 73. Enforce referential integrity in admin operations [P0] [R8]
-- [ ] 74. Add validation for admin API requests [P0] [R8]
+- [x] 69. Implement POST /api/admin/products [P0] [R8]
+- [x] 70. Implement POST /api/admin/variants [P0] [R8]
+- [x] 71. Implement POST /api/admin/lots [P0] [R8]
+- [x] 72. Add PATCH/DELETE endpoints for catalog entities [P0] [R8]
+- [x] 73. Enforce referential integrity in admin operations [P0] [R8]
+- [x] 74. Add validation for admin API requests [P0] [R8]
 
 ### Admin Order Management
-- [ ] 75. Implement GET /api/admin/orders (list all orders) [P0] [R9]
-- [ ] 76. Implement PATCH /api/admin/orders/{id}/mark-paid [P0] [R9]
-- [ ] 77. Add stock adjustment logic for paid orders (stockQty -= qty, reservedQty -= qty) [P0] [R9, R10]
-- [ ] 78. Write "Payment Received" event to application log when marked as paid [P0] [R9, R6]
-- [ ] 79. Implement PATCH /api/admin/orders/{id}/ship [P0] [R9]
-- [ ] 80. Add tracking URL support for shipped orders [P0] [R9]
-- [ ] 81. Write "Order Shipped" event to application log with tracking info [P0] [R9, R6]
-- [ ] 82. Implement PATCH /api/admin/orders/{id}/cancel [P0] [R9]
-- [ ] 83. Add reservation release logic for canceled orders [P0] [R9, R10]
-- [ ] 84. Add order state validation (prevent invalid transitions) [P0] [R9]
+- [x] 75. Implement GET /api/admin/orders (list all orders) [P0] [R9]
+- [x] 76. Implement PATCH /api/admin/orders/{id}/mark-paid [P0] [R9]
+- [x] 77. Add stock adjustment logic for paid orders (stockQty -= qty, reservedQty -= qty) [P0] [R9, R10]
+- [x] 78. Write "Payment Received" event to application log when marked as paid [P0] [R9, R6]
+- [x] 79. Implement PATCH /api/admin/orders/{id}/ship [P0] [R9]
+- [x] 80. Add tracking URL support for shipped orders [P0] [R9]
+- [x] 81. Write "Order Shipped" event to application log with tracking info [P0] [R9, R6]
+- [x] 82. Implement PATCH /api/admin/orders/{id}/cancel [P0] [R9]
+- [x] 83. Add reservation release logic for canceled orders [P0] [R9, R10]
+- [x] 84. Add order state validation (prevent invalid transitions) [P0] [R9]
 
 ### Admin UI
-- [ ] 85. Create Admin Login page [P0] [R14]
-- [ ] 86. Create Admin Dashboard [P0] [R14]
-- [ ] 87. Create Admin Products management page [P0] [R14]
-- [ ] 88. Create Admin Orders management page [P0] [R14]
-- [ ] 89. Add order status update controls [P0] [R9, R14]
+- [x] 85. Create Admin Login page [P0] [R14]
+- [x] 86. Create Admin Dashboard [P0] [R14]
+- [x] 87. Create Admin Products management page [P0] [R14]
+- [x] 88. Create Admin Orders management page [P0] [R14]
+- [x] 89. Add order status update controls [P0] [R9, R14]
 
 ---
 
@@ -271,6 +271,6 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 - **P2 (Nice-to-have):** 4 tasks
 
 **Progress Tracking:**
-- Completed: 55/143 (38%)
+- Completed: 80/143 (56%)
 - In Progress: 0/143 (0%)
-- Not Started: 88/143 (62%)
+- Not Started: 63/143 (44%)

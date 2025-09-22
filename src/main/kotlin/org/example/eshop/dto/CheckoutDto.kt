@@ -4,11 +4,18 @@ import org.example.eshop.entity.Order
 import org.example.eshop.entity.OrderStatus
 import org.example.eshop.entity.PaymentStatus
 import org.example.eshop.entity.FulfillmentStatus
+import jakarta.validation.constraints.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class CheckoutRequest(
+    @field:NotBlank(message = "Email is required")
+    @field:Email(message = "Email must be valid")
+    @field:Size(max = 255, message = "Email must not exceed 255 characters")
     val email: String,
+
+    @field:NotBlank(message = "Address is required")
+    @field:Size(max = 1000, message = "Address must not exceed 1000 characters")
     val address: String
 )
 

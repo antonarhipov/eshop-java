@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Tea Shop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .admin-header {
+            background: #2c5530;
+            color: white;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        .admin-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .admin-nav h1 {
+            margin: 0;
+        }
+        .admin-nav .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+        .admin-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .admin-nav a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .dashboard-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        .dashboard-card h2 {
+            margin-top: 0;
+            color: #2c5530;
+        }
+        .dashboard-card .card-content {
+            margin-bottom: 1rem;
+        }
+        .dashboard-card .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary {
+            background: #2c5530;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1e3a21;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c5530;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .recent-orders {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+        .recent-orders h2 {
+            margin-top: 0;
+            color: #2c5530;
+        }
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .orders-table th,
+        .orders-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .orders-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-shipped {
+            background: #cce5ff;
+            color: #004085;
+        }
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <nav class="admin-nav">
+            <h1>Tea Shop Admin</h1>
+            <div class="nav-links">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <a th:href="@{/admin/products}">Products</a>
+                <a th:href="@{/admin/orders}">Orders</a>
+                <a th:href="@{/admin/logout}">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="dashboard-container">
+        <h1>Dashboard</h1>
+        
+        <!-- Statistics Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">--</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">--</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">--</div>
+                <div class="stat-label">Pending Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">--</div>
+                <div class="stat-label">Low Stock Items</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h2>Product Management</h2>
+                <div class="card-content">
+                    <p>Manage your tea catalog, variants, and lots. Add new products, update pricing, and manage inventory.</p>
+                </div>
+                <div class="card-actions">
+                    <a th:href="@{/admin/products}" class="btn btn-primary">Manage Products</a>
+                    <a th:href="@{/admin/products/new}" class="btn btn-secondary">Add Product</a>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Order Management</h2>
+                <div class="card-content">
+                    <p>Process orders, mark as paid, ship orders, and handle cancellations. Track order fulfillment status.</p>
+                </div>
+                <div class="card-actions">
+                    <a th:href="@{/admin/orders}" class="btn btn-primary">Manage Orders</a>
+                    <a th:href="@{/admin/orders?status=pending}" class="btn btn-secondary">Pending Orders</a>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>Inventory Overview</h2>
+                <div class="card-content">
+                    <p>Monitor stock levels, reserved quantities, and identify items that need restocking.</p>
+                </div>
+                <div class="card-actions">
+                    <a th:href="@{/admin/inventory}" class="btn btn-primary">View Inventory</a>
+                    <a th:href="@{/admin/inventory/low-stock}" class="btn btn-secondary">Low Stock</a>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h2>System Status</h2>
+                <div class="card-content">
+                    <p>System is running normally. All services are operational.</p>
+                </div>
+                <div class="card-actions">
+                    <a th:href="@{/}" class="btn btn-secondary">View Shop</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="recent-orders">
+            <h2>Recent Orders</h2>
+            <p>Latest orders requiring attention</p>
+            
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #666; padding: 2rem;">
+                            No recent orders to display. Orders will appear here once customers start placing orders.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 1rem;">
+                <a th:href="@{/admin/orders}" class="btn btn-primary">View All Orders</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

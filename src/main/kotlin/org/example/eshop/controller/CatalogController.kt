@@ -11,6 +11,11 @@ class CatalogController(
     private val productService: ProductService
 ) {
 
+    @GetMapping("/")
+    fun home(): String {
+        return "redirect:/catalog"
+    }
+
     @GetMapping("/catalog")
     fun catalog(
         @RequestParam(required = false) type: String?,

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Tea Shop Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .admin-header {
+            background: #2c5530;
+            color: white;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        .admin-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .admin-nav h1 {
+            margin: 0;
+        }
+        .admin-nav .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+        .admin-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .admin-nav a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .admin-nav a.active {
+            background: rgba(255,255,255,0.2);
+        }
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            margin: 0;
+            color: #2c5530;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary {
+            background: #2c5530;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1e3a21;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .filters {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .filters h3 {
+            margin-top: 0;
+            color: #2c5530;
+        }
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .orders-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-confirmed {
+            background: #cce5ff;
+            color: #004085;
+        }
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .payment-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .payment-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+        .payment-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .fulfillment-unfulfilled {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .fulfillment-fulfilled {
+            background: #d4edda;
+            color: #155724;
+        }
+        .actions {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: #2c5530;
+        }
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        .close:hover {
+            color: #000;
+        }
+        .order-details {
+            margin-bottom: 1.5rem;
+        }
+        .order-details h4 {
+            margin-bottom: 0.5rem;
+            color: #2c5530;
+        }
+        .order-items {
+            margin-bottom: 1rem;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-totals {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .total-row.final {
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-top: 1px solid #ddd;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .form-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        .empty-state h3 {
+            margin-bottom: 1rem;
+        }
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <nav class="admin-nav">
+            <h1>Tea Shop Admin</h1>
+            <div class="nav-links">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <a th:href="@{/admin/products}">Products</a>
+                <a th:href="@{/admin/orders}" class="active">Orders</a>
+                <a th:href="@{/admin/logout}">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="admin-container">
+        <div class="page-header">
+            <h1>Order Management</h1>
+            <div>
+                <button class="btn btn-primary" onclick="refreshOrders()">Refresh</button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <h3>Filters</h3>
+            <div class="filter-row">
+                <div class="form-group">
+                    <label for="filterStatus">Order Status:</label>
+                    <select id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="CONFIRMED">Confirmed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filterPaymentStatus">Payment Status:</label>
+                    <select id="filterPaymentStatus">
+                        <option value="">All Payment Statuses</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="PAID">Paid</option>
+                        <option value="FAILED">Failed</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filterFulfillmentStatus">Fulfillment Status:</label>
+                    <select id="filterFulfillmentStatus">
+                        <option value="">All Fulfillment Statuses</option>
+                        <option value="UNFULFILLED">Unfulfilled</option>
+                        <option value="FULFILLED">Fulfilled</option>
+                    </select>
+                </div>
+                <div class="form-group" style="align-self: end;">
+                    <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="orders-table">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Fulfillment</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <h3>No orders found</h3>
+                            <p>Orders will appear here once customers start placing orders.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Order Details</h2>
+                <span class="close" onclick="closeOrderModal()">&times;</span>
+            </div>
+            
+            <div id="orderDetails">
+                <!-- Order details will be populated here -->
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="closeOrderModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mark as Paid Modal -->
+    <div id="markPaidModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Mark Order as Paid</h2>
+                <span class="close" onclick="closeMarkPaidModal()">&times;</span>
+            </div>
+            
+            <div class="alert alert-success">
+                <strong>Confirm Payment:</strong> This will mark the order as paid and adjust inventory levels.
+            </div>
+            
+            <div id="markPaidOrderDetails">
+                <!-- Order summary will be populated here -->
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-danger" onclick="closeMarkPaidModal()">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="confirmMarkPaid()">Mark as Paid</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ship Order Modal -->
+    <div id="shipOrderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ship Order</h2>
+                <span class="close" onclick="closeShipOrderModal()">&times;</span>
+            </div>
+            
+            <form id="shipOrderForm">
+                <div class="form-group">
+                    <label for="trackingUrl">Tracking URL (optional):</label>
+                    <input type="url" id="trackingUrl" name="trackingUrl" placeholder="https://tracking.example.com/12345">
+                </div>
+                
+                <div id="shipOrderDetails">
+                    <!-- Order summary will be populated here -->
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-danger" onclick="closeShipOrderModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success">Ship Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cancel Order Modal -->
+    <div id="cancelOrderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Cancel Order</h2>
+                <span class="close" onclick="closeCancelOrderModal()">&times;</span>
+            </div>
+            
+            <div class="alert alert-danger">
+                <strong>Warning:</strong> This will cancel the order and release any reserved inventory.
+            </div>
+            
+            <div id="cancelOrderDetails">
+                <!-- Order summary will be populated here -->
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="closeCancelOrderModal()">Keep Order</button>
+                <button type="button" class="btn btn-danger" onclick="confirmCancelOrder()">Cancel Order</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentOrderId = null;
+
+        // Modal functions
+        function viewOrder(orderId) {
+            currentOrderId = orderId;
+            // Here you would make an API call to get order details
+            console.log('Viewing order:', orderId);
+            
+            // Mock order details
+            const orderDetails = `
+                <div class="order-details">
+                    <h4>Order #ORD-${orderId}</h4>
+                    <p><strong>Customer:</strong> customer@example.com</p>
+                    <p><strong>Address:</strong> 123 Main St, City, Country</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-pending">Pending</span></p>
+                    <p><strong>Payment:</strong> <span class="status-badge payment-pending">Pending</span></p>
+                    <p><strong>Fulfillment:</strong> <span class="status-badge fulfillment-unfulfilled">Unfulfilled</span></p>
+                </div>
+                
+                <div class="order-items">
+                    <h4>Items</h4>
+                    <div class="order-item">
+                        <span>Sample Tea - 25g</span>
+                        <span>2x $15.00 = $30.00</span>
+                    </div>
+                </div>
+                
+                <div class="order-totals">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span>$30.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Tax:</span>
+                        <span>$6.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Shipping:</span>
+                        <span>$5.00</span>
+                    </div>
+                    <div class="total-row final">
+                        <span>Total:</span>
+                        <span>$41.00</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('orderDetails').innerHTML = orderDetails;
+            document.getElementById('orderModal').style.display = 'block';
+        }
+
+        function markAsPaid(orderId) {
+            currentOrderId = orderId;
+            const orderSummary = `<p><strong>Order #ORD-${orderId}</strong> - Total: $41.00</p>`;
+            document.getElementById('markPaidOrderDetails').innerHTML = orderSummary;
+            document.getElementById('markPaidModal').style.display = 'block';
+        }
+
+        function shipOrder(orderId) {
+            currentOrderId = orderId;
+            const orderSummary = `<p><strong>Order #ORD-${orderId}</strong> - Ready to ship</p>`;
+            document.getElementById('shipOrderDetails').innerHTML = orderSummary;
+            document.getElementById('shipOrderModal').style.display = 'block';
+        }
+
+        function cancelOrder(orderId) {
+            currentOrderId = orderId;
+            const orderSummary = `<p><strong>Order #ORD-${orderId}</strong> - This action cannot be undone</p>`;
+            document.getElementById('cancelOrderDetails').innerHTML = orderSummary;
+            document.getElementById('cancelOrderModal').style.display = 'block';
+        }
+
+        function confirmMarkPaid() {
+            if (currentOrderId) {
+                // Here you would make an API call to mark order as paid
+                console.log('Marking order as paid:', currentOrderId);
+                alert(`Order #ORD-${currentOrderId} marked as paid! (Demo - API integration needed)`);
+                closeMarkPaidModal();
+                refreshOrders();
+            }
+        }
+
+        function confirmCancelOrder() {
+            if (currentOrderId) {
+                // Here you would make an API call to cancel order
+                console.log('Cancelling order:', currentOrderId);
+                alert(`Order #ORD-${currentOrderId} cancelled! (Demo - API integration needed)`);
+                closeCancelOrderModal();
+                refreshOrders();
+            }
+        }
+
+        // Modal close functions
+        function closeOrderModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        function closeMarkPaidModal() {
+            document.getElementById('markPaidModal').style.display = 'none';
+        }
+
+        function closeShipOrderModal() {
+            document.getElementById('shipOrderModal').style.display = 'none';
+        }
+
+        function closeCancelOrderModal() {
+            document.getElementById('cancelOrderModal').style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = ['orderModal', 'markPaidModal', 'shipOrderModal', 'cancelOrderModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Ship order form submission
+        document.getElementById('shipOrderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const trackingUrl = document.getElementById('trackingUrl').value;
+            
+            if (currentOrderId) {
+                // Here you would make an API call to ship order
+                console.log('Shipping order:', currentOrderId, 'with tracking:', trackingUrl);
+                alert(`Order #ORD-${currentOrderId} shipped! (Demo - API integration needed)`);
+                closeShipOrderModal();
+                refreshOrders();
+            }
+        });
+
+        // Filter and refresh functions
+        function applyFilters() {
+            const status = document.getElementById('filterStatus').value;
+            const paymentStatus = document.getElementById('filterPaymentStatus').value;
+            const fulfillmentStatus = document.getElementById('filterFulfillmentStatus').value;
+            
+            console.log('Applying filters:', { status, paymentStatus, fulfillmentStatus });
+            // Here you would make an API call to fetch filtered orders
+            alert('Filters applied! (Demo - API integration needed)');
+        }
+
+        function refreshOrders() {
+            console.log('Refreshing orders...');
+            // Here you would make an API call to reload orders
+            alert('Orders refreshed! (Demo - API integration needed)');
+        }
+
+        // Load orders on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Here you would make an API call to load orders
+            console.log('Loading orders...');
+        });
+    </script>
+</body>
+</html>

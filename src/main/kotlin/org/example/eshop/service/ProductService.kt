@@ -108,11 +108,21 @@ class ProductService(
     }
 
     fun findProductBySlug(slug: String): ProductDetailDto? {
-        val product = productRepository.findBySlug(slug) ?: return null
-        if (product.status != ProductStatus.ACTIVE) return null
+        println("[DEBUG_LOG] Looking for product with slug: $slug")
+        val product = productRepository.findBySlug(slug) ?: run {
+            println("[DEBUG_LOG] Product not found for slug: $slug")
+            return null
+        }
+        println("[DEBUG_LOG] Found product: ${product.title}, status: ${product.status}")
+        if (product.status != ProductStatus.ACTIVE) {
+            println("[DEBUG_LOG] Product is not ACTIVE, returning null")
+            return null
+        }
 
         val variants = variantRepository.findByProductId(product.id)
+        println("[DEBUG_LOG] Found ${variants.size} variants for product")
         val variantDtos = variants.map { variant ->
+            println("[DEBUG_LOG] Processing variant: ${variant.title}, availableQty: ${variant.availableQty()}")
             VariantDto(
                 id = variant.id,
                 sku = variant.sku,
@@ -127,8 +137,9 @@ class ProductService(
 
         // Get lot information from the first variant that has a lot
         val firstLot = variants.mapNotNull { it.lot }.firstOrNull()
+        println("[DEBUG_LOG] First lot found: ${firstLot != null}")
 
-        return ProductDetailDto(
+        val result = ProductDetailDto(
             id = product.id,
             slug = product.slug,
             title = product.title,
@@ -139,6 +150,8 @@ class ProductService(
             season = firstLot?.season?.name,
             storageType = firstLot?.storageType?.name
         )
+        println("[DEBUG_LOG] Returning ProductDetailDto with ${result.variants.size} variants")
+        return result
     }
 
     private fun calculateProductStockStatus(variants: List<Variant>): StockStatus {

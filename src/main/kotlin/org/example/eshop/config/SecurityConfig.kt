@@ -57,7 +57,7 @@ class SecurityConfig {
                     // Static resources
                     .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                     // Public pages
-                    .requestMatchers("/", "/catalog", "/product/**", "/cart", "/checkout", "/order-confirmation").permitAll()
+                    .requestMatchers("/", "/catalog", "/products/**", "/cart", "/checkout", "/order-confirmation").permitAll()
                     // All other requests require authentication
                     .anyRequest().authenticated()
             }

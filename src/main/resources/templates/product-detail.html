@@ -40,7 +40,7 @@
                             <p th:text="${product.description}"></p>
                         </div>
 
-                        <div th:if="${product.harvestYear or product.season or product.storageType}" class="product-details">
+                        <div th:if="${product.harvestYear != null or product.season != null or product.storageType != null}" class="product-details">
                             <h3>Product Details</h3>
                             <dl>
                                 <dt th:if="${product.harvestYear}">Harvest Year:</dt>
@@ -67,7 +67,7 @@
                                            name="selectedVariant" 
                                            th:value="${variant.id}"
                                            th:checked="${iterStat.first}"
-                                           hx-get="/api/variant-info"
+                                           hx-get="/api/products/variant-info"
                                            th:hx-vals="'{&quot;variantId&quot;: &quot;' + ${variant.id} + '&quot;}'"
                                            hx-target="#variant-info"
                                            hx-swap="innerHTML" />
@@ -124,11 +124,11 @@
 
                             <button type="button" 
                                     class="btn btn-primary add-to-cart-btn"
-                                    th:disabled="${!product.variants[0].inStock}"
+                                    th:disabled="${!product.variants[0].isInStock}"
                                     id="addToCartBtn"
                                     onclick="addToCart()">
-                                <span th:if="${product.variants[0].inStock}">Add to Cart</span>
-                                <span th:unless="${product.variants[0].inStock}">Out of Stock</span>
+                                <span th:if="${product.variants[0].isInStock}">Add to Cart</span>
+                                <span th:unless="${product.variants[0].isInStock}">Out of Stock</span>
                             </button>
                         </div>
 
@@ -166,7 +166,7 @@
                     
                     // Update add to cart button
                     const addToCartBtn = document.getElementById('addToCartBtn');
-                    if (selectedVariant.inStock) {
+                    if (selectedVariant.isInStock) {
                         addToCartBtn.disabled = false;
                         addToCartBtn.innerHTML = 'Add to Cart';
                     } else {

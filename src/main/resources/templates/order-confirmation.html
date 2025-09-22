@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Tea Shop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .confirmation-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .confirmation-header {
+            text-align: center;
+            padding: 40px 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+        }
+        
+        .success-icon {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        
+        .confirmation-header h1 {
+            color: #2c5530;
+            margin-bottom: 10px;
+        }
+        
+        .order-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c5530;
+            margin-bottom: 10px;
+        }
+        
+        .confirmation-message {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .order-details {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            color: #2c5530;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .info-section h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .info-content {
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .order-items {
+            margin-bottom: 30px;
+        }
+        
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .item-row:last-child {
+            border-bottom: none;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .item-variant {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 3px;
+        }
+        
+        .item-quantity {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .item-price {
+            font-weight: bold;
+            color: #2c5530;
+            text-align: right;
+        }
+        
+        .order-totals {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .total-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .total-row.final {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #2c5530;
+            padding-top: 15px;
+            border-top: 2px solid #ddd;
+            margin-top: 15px;
+        }
+        
+        .status-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-info h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .status-info p {
+            color: #856404;
+            margin-bottom: 5px;
+        }
+        
+        .actions {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 0 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background: #2c5530;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1e3a21;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .error-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .item-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .item-price {
+                text-align: left;
+            }
+            
+            .actions .btn {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Tea Shop</a>
+            <div class="nav-links">
+                <a href="/catalog">Catalog</a>
+                <a href="/cart" class="cart-link">
+                    Cart <span class="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="confirmation-container">
+        <!-- Success State -->
+        <div th:if="${order != null}">
+            <div class="confirmation-header">
+                <div class="success-icon">✓</div>
+                <h1>Order Confirmed!</h1>
+                <div class="order-number" th:text="'Order #' + ${order.number}">Order #ORD-20231201-1234</div>
+                <p class="confirmation-message">Thank you for your order. We've received your order and will process it shortly.</p>
+            </div>
+
+            <div class="status-info">
+                <h4>What happens next?</h4>
+                <p><strong>Payment Status:</strong> <span th:text="${order.paymentStatus}">PENDING</span></p>
+                <p><strong>Order Status:</strong> <span th:text="${order.status}">PENDING</span></p>
+                <p>Your order is currently pending payment. Once payment is processed by our team, we'll prepare your items for shipping.</p>
+            </div>
+
+            <div class="order-details">
+                <h2 class="section-header">Order Details</h2>
+                
+                <div class="info-grid">
+                    <div class="info-section">
+                        <h4>Customer Information</h4>
+                        <div class="info-content">
+                            <p><strong>Email:</strong> <span th:text="${order.email}">customer@example.com</span></p>
+                            <p><strong>Order Date:</strong> <span th:text="${#temporals.format(order.createdAt, 'MMM dd, yyyy HH:mm')}">Dec 01, 2023 14:30</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <h4>Shipping Address</h4>
+                        <div class="info-content">
+                            <p th:text="${order.address}">123 Main Street<br>City, State 12345<br>Country</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-items">
+                    <h4>Items Ordered</h4>
+                    <div class="item-row" th:each="item : ${order.items}">
+                        <div class="item-info">
+                            <div class="item-title" th:text="${item.titleSnapshot}">Product Name</div>
+                            <div class="item-variant" th:text="'SKU: ' + ${item.variantId}">SKU: 12345</div>
+                            <div class="item-quantity" th:text="'Quantity: ' + ${item.qty}">Quantity: 1</div>
+                        </div>
+                        <div class="item-price">
+                            <div th:text="'$' + ${item.priceSnapshot} + ' each'">$25.00 each</div>
+                            <div th:text="'$' + ${item.lineTotal} + ' total'" style="font-size: 0.9em; color: #666;">$25.00 total</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-totals">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span th:text="'$' + ${order.subtotal}">$25.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>VAT:</span>
+                        <span th:text="'$' + ${order.tax}">$5.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Shipping:</span>
+                        <span th:text="'$' + ${order.shipping}">$3.99</span>
+                    </div>
+                    <div class="total-row final">
+                        <span>Total:</span>
+                        <span th:text="'$' + ${order.total}">$33.99</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div th:if="${order == null}" class="error-state">
+            <div class="error-icon">✗</div>
+            <h1>Order Not Found</h1>
+            <p>We couldn't find the order you're looking for. Please check the order number and try again.</p>
+            <div class="actions">
+                <a href="/catalog" class="btn btn-primary">Continue Shopping</a>
+                <a href="/cart" class="btn btn-secondary">View Cart</a>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div th:if="${order != null}" class="actions">
+            <a href="/catalog" class="btn btn-primary">Continue Shopping</a>
+            <a th:href="@{'/api/orders/' + ${order.number}}" class="btn btn-secondary" target="_blank">View Order Details</a>
+        </div>
+    </div>
+
+    <script>
+        // Clear cart from session storage after successful order
+        if (document.querySelector('.confirmation-header')) {
+            sessionStorage.removeItem('cartId');
+            // Update cart count in navigation
+            const cartCount = document.querySelector('.cart-count');
+            if (cartCount) {
+                cartCount.textContent = '0';
+            }
+        }
+        
+        // Auto-refresh order status every 30 seconds (optional)
+        const orderNumber = document.querySelector('.order-number');
+        if (orderNumber) {
+            const orderNum = orderNumber.textContent.replace('Order #', '');
+            
+            setInterval(() => {
+                fetch(`/api/orders/${orderNum}`)
+                    .then(response => response.json())
+                    .then(order => {
+                        // Update payment status if changed
+                        const paymentStatus = document.querySelector('.status-info p:nth-child(2) span');
+                        const orderStatus = document.querySelector('.status-info p:nth-child(3) span');
+                        
+                        if (paymentStatus && paymentStatus.textContent !== order.paymentStatus) {
+                            paymentStatus.textContent = order.paymentStatus;
+                            
+                            // Show notification if payment status changed to PAID
+                            if (order.paymentStatus === 'PAID') {
+                                alert('Great news! Your payment has been processed.');
+                            }
+                        }
+                        
+                        if (orderStatus && orderStatus.textContent !== order.status) {
+                            orderStatus.textContent = order.status;
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Could not refresh order status:', error);
+                    });
+            }, 30000); // 30 seconds
+        }
+    </script>
+</body>
+</html>

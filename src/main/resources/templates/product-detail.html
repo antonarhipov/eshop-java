@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.title} + ' - Premium Tea Shop'">Product Detail - Premium Tea Shop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><a th:href="@{/catalog}">Premium Tea Shop</a></h1>
+            <nav>
+                <a th:href="@{/catalog}">Catalog</a>
+                <a th:href="@{/cart}">Cart</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a th:href="@{/catalog}">Catalog</a>
+                <span class="separator">></span>
+                <span th:text="${product.title}"></span>
+            </nav>
+
+            <div class="product-detail">
+                <div class="product-header">
+                    <h1 th:text="${product.title}"></h1>
+                    <p class="product-type" th:text="${product.type}"></p>
+                </div>
+
+                <div class="product-content">
+                    <div class="product-info">
+                        <div th:if="${product.description}" class="product-description">
+                            <h3>Description</h3>
+                            <p th:text="${product.description}"></p>
+                        </div>
+
+                        <div th:if="${product.harvestYear or product.season or product.storageType}" class="product-details">
+                            <h3>Product Details</h3>
+                            <dl>
+                                <dt th:if="${product.harvestYear}">Harvest Year:</dt>
+                                <dd th:if="${product.harvestYear}" th:text="${product.harvestYear}"></dd>
+                                
+                                <dt th:if="${product.season}">Season:</dt>
+                                <dd th:if="${product.season}" th:text="${product.season}"></dd>
+                                
+                                <dt th:if="${product.storageType}">Storage Type:</dt>
+                                <dd th:if="${product.storageType}" th:text="${product.storageType}"></dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <div class="product-purchase">
+                        <div class="variant-selector">
+                            <h3>Select Variant</h3>
+                            <div class="variants-list">
+                                <div th:each="variant, iterStat : ${product.variants}" 
+                                     class="variant-option"
+                                     th:classappend="${iterStat.first} ? 'selected' : ''">
+                                    <input type="radio" 
+                                           th:id="'variant-' + ${variant.id}"
+                                           name="selectedVariant" 
+                                           th:value="${variant.id}"
+                                           th:checked="${iterStat.first}"
+                                           hx-get="/api/variant-info"
+                                           th:hx-vals="'{&quot;variantId&quot;: &quot;' + ${variant.id} + '&quot;}'"
+                                           hx-target="#variant-info"
+                                           hx-swap="innerHTML" />
+                                    <label th:for="'variant-' + ${variant.id}" class="variant-label">
+                                        <div class="variant-title" th:text="${variant.title}"></div>
+                                        <div class="variant-price" th:text="'$' + ${#numbers.formatDecimal(variant.price, 1, 2)}"></div>
+                                        <div class="variant-weight" th:text="${#numbers.formatDecimal(variant.weight * 1000, 0, 0)} + 'g'"></div>
+                                        <div class="variant-stock" th:classappend="${variant.stockStatus.name().toLowerCase()}">
+                                            <span th:switch="${variant.stockStatus.name()}">
+                                                <span th:case="'IN_STOCK'" th:text="'In Stock (' + ${variant.availableQty} + ')'"></span>
+                                                <span th:case="'LOW_STOCK'" th:text="'Low Stock (' + ${variant.availableQty} + ')'"></span>
+                                                <span th:case="'OUT_OF_STOCK'">Out of Stock</span>
+                                            </span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Variant Info -->
+                        <div id="variant-info" class="variant-info">
+                            <div th:with="firstVariant=${product.variants[0]}">
+                                <div class="selected-price">
+                                    <span class="price-label">Price:</span>
+                                    <span class="price-value" th:text="'$' + ${#numbers.formatDecimal(firstVariant.price, 1, 2)}"></span>
+                                </div>
+                                <div class="selected-stock">
+                                    <span class="stock-label">Availability:</span>
+                                    <span class="stock-value" th:classappend="${firstVariant.stockStatus.name().toLowerCase()}">
+                                        <span th:switch="${firstVariant.stockStatus.name()}">
+                                            <span th:case="'IN_STOCK'" th:text="'In Stock (' + ${firstVariant.availableQty} + ' available)'"></span>
+                                            <span th:case="'LOW_STOCK'" th:text="'Low Stock (' + ${firstVariant.availableQty} + ' available)'"></span>
+                                            <span th:case="'OUT_OF_STOCK'">Out of Stock</span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add to Cart Form -->
+                        <div class="add-to-cart-form">
+                            <input type="hidden" name="productId" th:value="${product.id}">
+                            <input type="hidden" name="variantId" th:value="${product.variants[0].id}" id="selectedVariantId">
+                            
+                            <div class="quantity-selector">
+                                <label for="quantity">Quantity:</label>
+                                <div class="quantity-controls">
+                                    <button type="button" class="qty-btn qty-minus" onclick="decreaseQuantity()">-</button>
+                                    <input type="number" id="quantity" name="quantity" value="1" min="1" 
+                                           th:max="${product.variants[0].availableQty}" class="qty-input">
+                                    <button type="button" class="qty-btn qty-plus" onclick="increaseQuantity()">+</button>
+                                </div>
+                            </div>
+
+                            <button type="button" 
+                                    class="btn btn-primary add-to-cart-btn"
+                                    th:disabled="${!product.variants[0].inStock}"
+                                    id="addToCartBtn"
+                                    onclick="addToCart()">
+                                <span th:if="${product.variants[0].inStock}">Add to Cart</span>
+                                <span th:unless="${product.variants[0].inStock}">Out of Stock</span>
+                            </button>
+                        </div>
+
+                        <!-- Back to Catalog -->
+                        <div class="back-link">
+                            <a th:href="@{/catalog}" class="btn btn-secondary">← Back to Catalog</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Premium Tea Shop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Update selected variant ID when radio button changes
+        document.addEventListener('change', function(e) {
+            if (e.target.name === 'selectedVariant') {
+                document.getElementById('selectedVariantId').value = e.target.value;
+                
+                // Update quantity max based on selected variant
+                const variants = /*[[${product.variants}]]*/ [];
+                const selectedVariant = variants.find(v => v.id == e.target.value);
+                if (selectedVariant) {
+                    const quantityInput = document.getElementById('quantity');
+                    quantityInput.max = selectedVariant.availableQty;
+                    if (parseInt(quantityInput.value) > selectedVariant.availableQty) {
+                        quantityInput.value = selectedVariant.availableQty;
+                    }
+                    
+                    // Update add to cart button
+                    const addToCartBtn = document.getElementById('addToCartBtn');
+                    if (selectedVariant.inStock) {
+                        addToCartBtn.disabled = false;
+                        addToCartBtn.innerHTML = 'Add to Cart';
+                    } else {
+                        addToCartBtn.disabled = true;
+                        addToCartBtn.innerHTML = 'Out of Stock';
+                    }
+                }
+            }
+        });
+
+        function decreaseQuantity() {
+            const input = document.getElementById('quantity');
+            const currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+            }
+        }
+
+        function increaseQuantity() {
+            const input = document.getElementById('quantity');
+            const currentValue = parseInt(input.value);
+            const maxValue = parseInt(input.max);
+            if (currentValue < maxValue) {
+                input.value = currentValue + 1;
+            }
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        async function ensureCartExists() {
+            let cartId = getCookie('cartId');
+            
+            if (!cartId) {
+                // Create new cart
+                try {
+                    const response = await fetch('/api/cart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success && data.cart) {
+                            cartId = data.cart.id;
+                        } else {
+                            throw new Error(data.message || 'Failed to create cart');
+                        }
+                    } else {
+                        throw new Error('Failed to create cart');
+                    }
+                } catch (error) {
+                    console.error('Error creating cart:', error);
+                    throw error;
+                }
+            }
+            
+            return cartId;
+        }
+
+        async function addToCart() {
+            const addToCartBtn = document.getElementById('addToCartBtn');
+            const originalText = addToCartBtn.innerHTML;
+            
+            try {
+                // Disable button and show loading state
+                addToCartBtn.disabled = true;
+                addToCartBtn.innerHTML = 'Adding...';
+                
+                // Get form values
+                const variantId = parseInt(document.getElementById('selectedVariantId').value);
+                const quantity = parseInt(document.getElementById('quantity').value);
+                
+                // Validate inputs
+                if (!variantId || !quantity || quantity < 1) {
+                    throw new Error('Please select a valid variant and quantity');
+                }
+                
+                // Ensure cart exists
+                const cartId = await ensureCartExists();
+                
+                // Add item to cart
+                const response = await fetch(`/api/cart/${cartId}/items`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        variantId: variantId,
+                        quantity: quantity
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    addToCartBtn.innerHTML = 'Added!';
+                    addToCartBtn.style.backgroundColor = '#28a745';
+                    
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        addToCartBtn.innerHTML = originalText;
+                        addToCartBtn.style.backgroundColor = '';
+                        addToCartBtn.disabled = false;
+                    }, 2000);
+                    
+                    // Optionally redirect to cart or show cart summary
+                    // window.location.href = '/cart';
+                } else {
+                    throw new Error(data.message || 'Failed to add item to cart');
+                }
+                
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                alert(error.message || 'Failed to add item to cart. Please try again.');
+                
+                // Reset button
+                addToCartBtn.innerHTML = originalText;
+                addToCartBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

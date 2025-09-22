@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: eshop-test
+  
+  # Test Database Configuration (H2 in-memory)
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  # JPA Test Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  
+  # Disable Flyway for tests
+  flyway:
+    enabled: false
+  
+  # Test Security Configuration
+  security:
+    user:
+      name: admin
+      password: admin123
+      roles: ADMIN
+
+# Test Logging Configuration
+logging:
+  level:
+    org.example.eshop: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Shop Configuration for Tests
+shop:
+  vatRate: 0.20
+  search:
+    synonyms:
+      puer: ["pu-erh", "pu erh", "puerh"]
+      "pu-erh": ["puer", "pu erh", "puerh"]
+  shipping:
+    zones:
+      domestic:
+        name: "Domestic"
+        brackets:
+          - weight: 500
+            cost: 5.00
+          - weight: 1000
+            cost: 7.50
+          - weight: 2000
+            cost: 10.00

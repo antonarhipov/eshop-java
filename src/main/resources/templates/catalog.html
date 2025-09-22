@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tea Catalog - Premium Tea Shop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><a th:href="@{/catalog}">Premium Tea Shop</a></h1>
+            <nav>
+                <a th:href="@{/catalog}">Catalog</a>
+                <a th:href="@{/cart}">Cart</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <h2>Tea Catalog</h2>
+
+            <!-- Error Message -->
+            <div th:if="${error}" class="error-message">
+                <p th:text="${error}"></p>
+            </div>
+
+            <!-- Filter Form -->
+            <form class="filter-form" method="get" th:action="@{/catalog}">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="type">Type:</label>
+                        <select id="type" name="type">
+                            <option value="">All Types</option>
+                            <option th:each="typeOption : ${availableTypes}" 
+                                    th:value="${typeOption}" 
+                                    th:text="${typeOption}"
+                                    th:selected="${typeOption == selectedType}"></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="harvestYear">Harvest Year:</label>
+                        <select id="harvestYear" name="harvestYear">
+                            <option value="">Any Year</option>
+                            <option th:each="year : ${availableHarvestYears}" 
+                                    th:value="${year}" 
+                                    th:text="${year}"
+                                    th:selected="${year == selectedHarvestYear}"></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="minPrice">Min Price:</label>
+                        <input type="number" id="minPrice" name="minPrice" 
+                               step="0.01" min="0" 
+                               th:value="${selectedMinPrice}" 
+                               placeholder="0.00">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="maxPrice">Max Price:</label>
+                        <input type="number" id="maxPrice" name="maxPrice" 
+                               step="0.01" min="0" 
+                               th:value="${selectedMaxPrice}" 
+                               placeholder="999.99">
+                    </div>
+
+                    <div class="filter-group">
+                        <label>
+                            <input type="checkbox" name="inStock" value="true" 
+                                   th:checked="${selectedInStock}">
+                            In Stock Only
+                        </label>
+                    </div>
+
+                    <div class="filter-group">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a th:href="@{/catalog}" class="btn btn-secondary">Clear</a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Products Grid -->
+            <div class="products-section">
+                <!-- Empty State -->
+                <div th:if="${products.empty}" class="empty-state">
+                    <h3>No products found</h3>
+                    <p>Try adjusting your filters or <a th:href="@{/catalog}">browse all products</a>.</p>
+                </div>
+
+                <!-- Products Grid -->
+                <div th:unless="${products.empty}" class="products-grid">
+                    <div th:each="product : ${products}" class="product-card">
+                        <div class="product-info">
+                            <h3>
+                                <a th:href="@{/products/{slug}(slug=${product.slug})}" 
+                                   th:text="${product.title}"></a>
+                            </h3>
+                            <p class="product-type" th:text="${product.type}"></p>
+                            <p th:if="${product.description}" 
+                               class="product-description" 
+                               th:text="${#strings.abbreviate(product.description, 100)}"></p>
+                            
+                            <div class="product-meta">
+                                <div class="price-range">
+                                    <span th:if="${product.minPrice == product.maxPrice}" 
+                                          th:text="'$' + ${#numbers.formatDecimal(product.minPrice, 1, 2)}"></span>
+                                    <span th:unless="${product.minPrice == product.maxPrice}" 
+                                          th:text="'$' + ${#numbers.formatDecimal(product.minPrice, 1, 2)} + ' - $' + ${#numbers.formatDecimal(product.maxPrice, 1, 2)}"></span>
+                                </div>
+                                
+                                <div class="stock-status" th:classappend="${product.stockStatus.name().toLowerCase()}">
+                                    <span th:switch="${product.stockStatus.name()}">
+                                        <span th:case="'IN_STOCK'">In Stock</span>
+                                        <span th:case="'LOW_STOCK'">Low Stock</span>
+                                        <span th:case="'OUT_OF_STOCK'">Out of Stock</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="product-details">
+                                <span th:if="${product.harvestYear}" 
+                                      class="harvest-year" 
+                                      th:text="'Harvest: ' + ${product.harvestYear}"></span>
+                                <span class="variant-count" 
+                                      th:text="${product.variantCount} + ' variant' + (${product.variantCount} > 1 ? 's' : '')"></span>
+                            </div>
+
+                            <div class="product-actions">
+                                <a th:href="@{/products/{slug}(slug=${product.slug})}" 
+                                   class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Summary -->
+                <div th:unless="${products.empty}" class="results-summary">
+                    <p th:text="${products.size()} + ' product' + (${products.size()} > 1 ? 's' : '') + ' found'"></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Premium Tea Shop. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

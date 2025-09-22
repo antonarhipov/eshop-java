@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Tea Shop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .cart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .cart-header {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .cart-items {
+            margin-bottom: 30px;
+        }
+        
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #fff;
+        }
+        
+        .item-info {
+            flex: 1;
+            margin-right: 20px;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .item-variant {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .item-price {
+            font-weight: bold;
+            color: #2c5530;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            margin: 0 20px;
+        }
+        
+        .quantity-btn {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .quantity-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-left: none;
+            border-right: none;
+            height: 30px;
+            margin: 0;
+        }
+        
+        .line-total {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 0 20px;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .remove-btn:hover {
+            background: #c82333;
+        }
+        
+        .cart-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .summary-row.total {
+            font-weight: bold;
+            font-size: 1.2em;
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            margin-top: 15px;
+        }
+        
+        .checkout-btn {
+            background: #2c5530;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .checkout-btn:hover {
+            background: #1e3a21;
+        }
+        
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-cart h2 {
+            margin-bottom: 20px;
+        }
+        
+        .continue-shopping {
+            background: #2c5530;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        
+        .continue-shopping:hover {
+            background: #1e3a21;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .stock-warning {
+            color: #856404;
+            background: #fff3cd;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="cart-container">
+        <div class="cart-header">
+            <h1>Shopping Cart</h1>
+            <p th:if="${cart != null and cart.items.size() > 0}">
+                <span th:text="${cart.items.size()}">0</span> item(s) in your cart
+            </p>
+        </div>
+
+        <!-- Error Messages -->
+        <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+        <!-- Empty Cart State -->
+        <div th:if="${cart == null or cart.items.empty}" class="empty-cart">
+            <h2>Your cart is empty</h2>
+            <p>Add some delicious teas to get started!</p>
+            <a th:href="@{/catalog}" class="continue-shopping">Continue Shopping</a>
+        </div>
+
+        <!-- Cart Items -->
+        <div th:if="${cart != null and not cart.items.empty}">
+            <div class="cart-items">
+                <div th:each="item : ${cart.items}" class="cart-item">
+                    <div class="item-info">
+                        <div class="item-title" th:text="${item.variant?.productTitle ?: 'Unknown Product'}">Product Name</div>
+                        <div class="item-variant" th:text="${item.variant?.title}">Variant</div>
+                        <div class="item-price">
+                            £<span th:text="${#numbers.formatDecimal(item.priceSnapshot, 1, 2)}">0.00</span> each
+                        </div>
+                        <div th:if="${item.variant != null and item.qty > (item.variant.stockQty - item.variant.reservedQty)}" 
+                             class="stock-warning">
+                            Only <span th:text="${item.variant.stockQty - item.variant.reservedQty}">0</span> in stock
+                        </div>
+                    </div>
+                    
+                    <div class="quantity-controls">
+                        <div class="quantity-btn" 
+                             th:onclick="'updateQuantity(' + ${item.variantId} + ', ' + ${item.qty - 1} + ')'">-</div>
+                        <input type="number" 
+                               class="quantity-input" 
+                               th:value="${item.qty}"
+                               th:onchange="'updateQuantity(' + ${item.variantId} + ', this.value)'"
+                               min="0"
+                               th:max="${item.variant != null ? (item.variant.stockQty - item.variant.reservedQty + item.qty) : 999}">
+                        <div class="quantity-btn" 
+                             th:onclick="'updateQuantity(' + ${item.variantId} + ', ' + ${item.qty + 1} + ')'">+</div>
+                    </div>
+                    
+                    <div class="line-total">
+                        £<span th:text="${#numbers.formatDecimal(item.lineTotal, 1, 2)}">0.00</span>
+                    </div>
+                    
+                    <button class="remove-btn" 
+                            th:onclick="'removeItem(' + ${item.variantId} + ')'">
+                        Remove
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="cart-summary">
+                <h3>Order Summary</h3>
+                
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>£<span th:text="${#numbers.formatDecimal(cart.subtotal, 1, 2)}">0.00</span></span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>VAT (20%):</span>
+                    <span>£<span th:text="${#numbers.formatDecimal(cart.vatAmount, 1, 2)}">0.00</span></span>
+                </div>
+                
+                <div class="summary-row">
+                    <span>Shipping:</span>
+                    <span>£<span th:text="${#numbers.formatDecimal(cart.shippingCost, 1, 2)}">0.00</span></span>
+                </div>
+                
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span>£<span th:text="${#numbers.formatDecimal(cart.total, 1, 2)}">0.00</span></span>
+                </div>
+                
+                <button class="checkout-btn" 
+                        th:disabled="${cart.items.empty}"
+                        onclick="proceedToCheckout()">
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cartId = getCookie('cartId');
+        
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        function updateQuantity(variantId, quantity) {
+            if (!cartId) {
+                alert('Cart not found. Please refresh the page.');
+                return;
+            }
+            
+            quantity = parseInt(quantity);
+            if (isNaN(quantity) || quantity < 0) {
+                alert('Please enter a valid quantity.');
+                return;
+            }
+            
+            fetch(`/api/cart/${cartId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    variantId: variantId,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Failed to update cart');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update cart');
+            });
+        }
+        
+        function removeItem(variantId) {
+            if (!cartId) {
+                alert('Cart not found. Please refresh the page.');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to remove this item?')) {
+                fetch(`/api/cart/${cartId}/items/${variantId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Failed to remove item');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to remove item');
+                });
+            }
+        }
+        
+        function proceedToCheckout() {
+            if (!cartId) {
+                alert('Cart not found. Please refresh the page.');
+                return;
+            }
+            
+            window.location.href = `/checkout/${cartId}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Tea Shop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .checkout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .checkout-header {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .checkout-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+        }
+        
+        .checkout-form {
+            background: #fff;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h3 {
+            color: #2c5530;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2c5530;
+            box-shadow: 0 0 0 2px rgba(44, 85, 48, 0.1);
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .mock-payment {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+            text-align: center;
+        }
+        
+        .mock-payment h4 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .mock-payment p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .payment-method {
+            padding: 8px 16px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .order-summary {
+            background: #f8f9fa;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: fit-content;
+        }
+        
+        .summary-header {
+            color: #2c5530;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-details {
+            flex: 1;
+        }
+        
+        .item-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .item-variant {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .item-quantity {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .item-price {
+            font-weight: bold;
+            color: #2c5530;
+        }
+        
+        .summary-totals {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+        }
+        
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .total-line.final {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #2c5530;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            background: #2c5530;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .checkout-btn:hover {
+            background: #1e3a21;
+        }
+        
+        .checkout-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .order-summary {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Tea Shop</a>
+            <div class="nav-links">
+                <a href="/catalog">Catalog</a>
+                <a href="/cart" class="cart-link">
+                    Cart <span class="cart-count" th:text="${cartItemCount ?: 0}">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <h1>Checkout</h1>
+            <p>Complete your order below</p>
+        </div>
+
+        <div class="checkout-content">
+            <div class="checkout-form">
+                <form id="checkoutForm">
+                    <div class="form-section">
+                        <h3>Customer Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                            <div class="error-message" id="emailError"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Shipping Address *</label>
+                            <textarea id="address" name="address" placeholder="Enter your full shipping address including street, city, postal code, and country" required></textarea>
+                            <div class="error-message" id="addressError"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Payment Information</h3>
+                        <div class="mock-payment">
+                            <h4>Mock Payment Gateway</h4>
+                            <p>This is a prototype - no real payment will be processed</p>
+                            <div class="payment-methods">
+                                <span class="payment-method">VISA</span>
+                                <span class="payment-method">MasterCard</span>
+                                <span class="payment-method">PayPal</span>
+                            </div>
+                            <p><small>Your order will be created with PENDING payment status</small></p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="order-summary">
+                <h3 class="summary-header">Order Summary</h3>
+                
+                <div class="summary-items" th:if="${cart != null and !cart.items.empty}">
+                    <div class="summary-item" th:each="item : ${cart.items}">
+                        <div class="item-details">
+                            <div class="item-title" th:text="${item.variant?.productTitle ?: 'Product'}">Product Name</div>
+                            <div class="item-variant" th:text="${item.variant?.title ?: 'Variant'}">Variant</div>
+                            <div class="item-quantity" th:text="'Qty: ' + ${item.qty}">Qty: 1</div>
+                        </div>
+                        <div class="item-price" th:text="'$' + ${item.lineTotal}">$0.00</div>
+                    </div>
+                </div>
+                
+                <div class="empty-cart" th:if="${cart == null or cart.items.empty}">
+                    <p>Your cart is empty</p>
+                    <a href="/catalog" class="btn">Continue Shopping</a>
+                </div>
+                
+                <div class="summary-totals" th:if="${cart != null and !cart.items.empty}">
+                    <div class="total-line">
+                        <span>Subtotal:</span>
+                        <span th:text="'$' + ${cart.subtotal}">$0.00</span>
+                    </div>
+                    <div class="total-line">
+                        <span>VAT:</span>
+                        <span th:text="'$' + ${cart.vatAmount}">$0.00</span>
+                    </div>
+                    <div class="total-line">
+                        <span>Shipping:</span>
+                        <span th:text="'$' + ${cart.shippingCost}">$0.00</span>
+                    </div>
+                    <div class="total-line final">
+                        <span>Total:</span>
+                        <span th:text="'$' + ${cart.total}">$0.00</span>
+                    </div>
+                </div>
+                
+                <button type="submit" form="checkoutForm" class="checkout-btn" 
+                        th:disabled="${cart == null or cart.items.empty}">
+                    Place Order
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            
+            const email = document.getElementById('email').value.trim();
+            const address = document.getElementById('address').value.trim();
+            
+            let hasErrors = false;
+            
+            // Validate email
+            if (!email) {
+                showError('emailError', 'Email is required');
+                hasErrors = true;
+            } else if (!isValidEmail(email)) {
+                showError('emailError', 'Please enter a valid email address');
+                hasErrors = true;
+            }
+            
+            // Validate address
+            if (!address) {
+                showError('addressError', 'Address is required');
+                hasErrors = true;
+            } else if (address.length < 10) {
+                showError('addressError', 'Address must be at least 10 characters long');
+                hasErrors = true;
+            }
+            
+            if (hasErrors) {
+                return;
+            }
+            
+            // Get cart ID from URL or session
+            const cartId = getCartId();
+            if (!cartId) {
+                alert('Cart not found. Please try again.');
+                return;
+            }
+            
+            // Submit checkout
+            submitCheckout(cartId, email, address);
+        });
+        
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})$/;
+            return emailRegex.test(email);
+        }
+        
+        function getCartId() {
+            // This would typically come from session or URL parameter
+            // For now, we'll use a placeholder - this should be implemented based on cart management
+            return sessionStorage.getItem('cartId') || new URLSearchParams(window.location.search).get('cartId');
+        }
+        
+        function submitCheckout(cartId, email, address) {
+            const submitButton = document.querySelector('.checkout-btn');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+            
+            fetch(`/api/checkout/${cartId}/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    address: address
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Checkout failed');
+                }
+            })
+            .then(order => {
+                // Redirect to order confirmation page
+                window.location.href = `/order-confirmation?orderNumber=${order.number}`;
+            })
+            .catch(error => {
+                console.error('Checkout error:', error);
+                alert('Checkout failed. Please try again.');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Place Order';
+            });
+        }
+    </script>
+</body>
+</html>

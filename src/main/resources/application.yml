@@ -1,0 +1,144 @@
+spring:
+  application:
+    name: eshop
+  profiles:
+    active: dev
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydatabase
+    username: myuser
+    password: secret
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+  
+  # Security Configuration
+  security:
+    user:
+      name: admin
+      password: admin123
+      roles: ADMIN
+
+# Logging Configuration
+logging:
+  level:
+    org.example.eshop: INFO
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/eshop.log
+    max-size: 10MB
+    max-history: 30
+
+# Shop Configuration
+shop:
+  vatRate: 0.20
+  search:
+    synonyms:
+      puer: ["pu-erh", "pu erh", "puerh"]
+      "pu-erh": ["puer", "pu erh", "puerh"]
+  shipping:
+    zones:
+      domestic:
+        name: "Domestic"
+        brackets:
+          - weight: 500
+            cost: 5.00
+          - weight: 1000
+            cost: 7.50
+          - weight: 2000
+            cost: 10.00
+      eu:
+        name: "European Union"
+        brackets:
+          - weight: 500
+            cost: 12.00
+          - weight: 1000
+            cost: 18.00
+          - weight: 2000
+            cost: 25.00
+      row:
+        name: "Rest of World"
+        brackets:
+          - weight: 500
+            cost: 20.00
+          - weight: 1000
+            cost: 30.00
+          - weight: 2000
+            cost: 45.00
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  # Development Database (Docker Compose)
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydatabase
+    username: myuser
+    password: secret
+  
+  # JPA Development Settings
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  
+  # Development Logging
+  logging:
+    level:
+      org.example.eshop: DEBUG
+      org.springframework.security: DEBUG
+      org.hibernate.SQL: DEBUG
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  # Production Database (Environment Variables)
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/eshop_prod}
+    username: ${DATABASE_USERNAME:eshop_user}
+    password: ${DATABASE_PASSWORD:changeme}
+  
+  # JPA Production Settings
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  
+  # Production Logging
+  logging:
+    level:
+      org.example.eshop: INFO
+      org.springframework.security: WARN
+      org.hibernate.SQL: WARN
+      org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    file:
+      name: /var/log/eshop/eshop.log

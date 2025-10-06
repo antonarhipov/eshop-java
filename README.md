@@ -1,6 +1,6 @@
 # Tea Shop E-commerce Prototype
 
-A Kotlin + Spring Boot e-commerce application for browsing and purchasing tea products with admin management capabilities.
+A Spring Boot e-commerce application for browsing and purchasing tea products with admin management capabilities.
 
 ## Overview
 
@@ -19,7 +19,6 @@ This is a prototype application with mock payment processing - no real payment t
 
 ## Technology Stack
 
-- **Language**: Kotlin 1.9.25
 - **Framework**: Spring Boot 3.5.5
 - **Java Version**: 21
 - **Database**: PostgreSQL (with H2 for testing)
@@ -205,7 +204,7 @@ eshop/
 │   └── spec.md                    # Technical specifications
 ├── src/
 │   ├── main/
-│   │   ├── kotlin/org/example/eshop/
+│   │   ├── java/org/example/eshop/
 │   │   │   ├── Application.kt     # Main application entry point
 │   │   │   ├── config/            # Configuration classes
 │   │   │   ├── controller/        # REST and MVC controllers

@@ -26,7 +26,6 @@ class NotificationService(
             val logMessage = """
                 |ORDER RECEIVED - AWAITING PAYMENT
                 |Order Number: ${order.number}
-                |Customer Email: ${order.email}
                 |Order Date: ${order.createdAt}
                 |
                 |Items:
@@ -37,9 +36,6 @@ class NotificationService(
                 |VAT Amount: ${order.tax}
                 |Shipping Cost: ${order.shipping}
                 |Total: ${order.total}
-                |
-                |Shipping Address:
-                |${order.address}
                 |
                 |Payment Status: ${order.paymentStatus}
                 |Order Status: ${order.status}

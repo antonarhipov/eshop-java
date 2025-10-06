@@ -20,6 +20,30 @@ data class Order(
     @Column(nullable = false, columnDefinition = "TEXT")
     val address: String,
 
+    @Column(name = "full_name", nullable = false)
+    val fullName: String = "",
+
+    @Column
+    val phone: String? = null,
+
+    @Column(nullable = false)
+    val street1: String = "",
+
+    @Column
+    val street2: String? = null,
+
+    @Column(nullable = false)
+    val city: String = "",
+
+    @Column(nullable = false)
+    val region: String = "",
+
+    @Column(name = "postal_code", nullable = false)
+    val postalCode: String = "",
+
+    @Column(nullable = false)
+    val country: String = "",
+
     @Column(nullable = false, precision = 10, scale = 2)
     val subtotal: BigDecimal,
 

@@ -2,6 +2,7 @@ package org.example.eshop.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.core.userdetails.User
@@ -19,9 +20,7 @@ import org.springframework.security.web.firewall.StrictHttpFirewall
 class SecurityConfig {
 
     @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
     fun httpFirewall(): HttpFirewall {
@@ -38,27 +37,25 @@ class SecurityConfig {
             .roles("ADMIN")
             .build()
 
-        return InMemoryUserDetailsManager(admin)
+        val user: UserDetails = User.builder()
+            .username("user")
+            .password(passwordEncoder().encode("password"))
+            .roles("USER")
+            .build()
+
+        return InMemoryUserDetailsManager(admin, user)
     }
 
+    // Admin security chain (higher priority)
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    @Order(1)
+    fun adminFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
+            .securityMatcher("/admin/**", "/api/admin/**")
             .authorizeHttpRequests { authz ->
                 authz
-                    // Admin endpoints require ADMIN role
                     .requestMatchers("/api/admin/**").hasRole("ADMIN")
                     .requestMatchers("/admin/**").hasRole("ADMIN")
-                    // Public API endpoints
-                    .requestMatchers("/api/products/**").permitAll()
-                    .requestMatchers("/api/cart/**").permitAll()
-                    .requestMatchers("/api/checkout/**").permitAll()
-                    .requestMatchers("/api/orders/**").permitAll()
-                    // Static resources
-                    .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-                    // Public pages
-                    .requestMatchers("/", "/catalog", "/products/**", "/cart", "/checkout", "/order-confirmation").permitAll()
-                    // All other requests require authentication
                     .anyRequest().authenticated()
             }
             .formLogin { form ->
@@ -76,11 +73,49 @@ class SecurityConfig {
                     .permitAll()
             }
             .csrf { csrf ->
+                // Keep CSRF enabled for admin operations; do not ignore admin endpoints
                 csrf
-                    // Enable CSRF protection for admin operations
+            }
+        return http.build()
+    }
+
+    // Public site security chain (fallback)
+    @Bean
+    @Order(2)
+    fun appFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .authorizeHttpRequests { authz ->
+                authz
+                    // Public APIs
+                    .requestMatchers("/api/products/**", "/api/cart/**", "/api/checkout/**", "/api/orders/**").permitAll()
+                    // Static resources
+                    .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                    // Public pages
+                    .requestMatchers("/", "/catalog", "/products/**", "/cart", "/checkout", "/order-confirmation", "/login").permitAll()
+                    // User area
+                    .requestMatchers("/account/**").authenticated()
+                    // Anything else on public site is allowed
+                    .anyRequest().permitAll()
+            }
+            .formLogin { form ->
+                form
+                    .loginPage("/login")
+                    .loginProcessingUrl("/login")
+                    .defaultSuccessUrl("/account", true)
+                    .failureUrl("/login?error=true")
+                    .permitAll()
+            }
+            .logout { logout ->
+                logout
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/login?logout=true")
+                    .permitAll()
+            }
+            .csrf { csrf ->
+                csrf
+                    // Allow APIs to be called without CSRF tokens (public client usage)
                     .ignoringRequestMatchers("/api/products/**", "/api/cart/**", "/api/checkout/**", "/api/orders/**")
             }
-
         return http.build()
     }
 }

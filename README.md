@@ -110,6 +110,35 @@ The application will be available at: http://localhost:8080
 - `./gradlew flywayValidate` - Validate applied migrations
 - `./gradlew flywayRepair` - Repair schema history table
 
+#### Repairing schema history (checksum mismatch)
+If you see a startup error like "Migration checksum mismatch" or "Validate failed: Migrations have failed validation", run a Flyway REPAIR to update the schema history table.
+
+Quick repair using the helper script:
+
+```bash
+./scripts/flyway_repair.sh
+```
+
+You can override connection settings via environment variables:
+
+```bash
+DB_HOST=localhost DB_PORT=5432 DB_NAME=mydatabase DB_USER=myuser DB_PASSWORD=secret ./scripts/flyway_repair.sh
+```
+
+Alternatively, run the Gradle task directly and pass connection details explicitly:
+
+```bash
+./gradlew flywayRepair \
+  -Dflyway.url=jdbc:postgresql://localhost:5432/mydatabase \
+  -Dflyway.user=myuser \
+  -Dflyway.password=secret \
+  -Dflyway.locations=filesystem:src/main/resources/db/migration
+```
+
+When to REPAIR vs RESET:
+- Use REPAIR to fix checksums after a migration file was modified but already applied.
+- Use the full reset script `./scripts/plan_b_reset_db.sh` only for local development when you can safely drop and recreate the database.
+
 ### Testing Commands
 
 - `./gradlew test` - Run all tests
@@ -255,7 +284,7 @@ Default admin credentials:
 The application uses Flyway for database migrations. Schema files are located in `src/main/resources/db/migration/`:
 
 - `V1__Create_initial_schema.sql` - Initial database schema
-- `V2__Insert_seed_data.sql` - Sample data for development
+- `V1__Insert_seed_data.sql` - Sample data for development
 
 ### Logging
 
@@ -283,3 +312,30 @@ For support and questions, please refer to the project documentation in the `doc
 ---
 
 **Note**: This is a prototype application for demonstration purposes. Do not use in production without proper security review and real payment gateway integration.
+
+
+## Schema Baseline Consolidation (2025-10-06)
+As of 2025-10-06, all schema DDL has been consolidated into the baseline migration `V0__Baseline_schema.sql`.
+Migrations `V1__Create_initial_schema.sql`, `V3__Add_order_contact_fields.sql`, and `V4__Reconcile_orders_contact_columns.sql` have been converted to no‑op placeholders to preserve version ordering.
+
+Actions required on existing databases (any environment that previously applied V1/V3/V4):
+
+1. Run a Flyway REPAIR once to accept new checksums:
+   ```bash
+   ./scripts/flyway_repair.sh
+   ```
+   Or via Gradle:
+   ```bash
+   ./gradlew flywayRepair
+   ```
+2. Then run migrations normally:
+   ```bash
+   ./gradlew flywayMigrate
+   ```
+
+Fresh installs:
+- Simply run `./gradlew flywayMigrate` on an empty database. Flyway will apply the consolidated baseline (V0) and then proceed with data seeds (V2) and any future migrations.
+
+Notes:
+- The consolidated baseline uses idempotent `CREATE TABLE/INDEX IF NOT EXISTS` statements, so it is safe even if discovered out‑of‑order on existing databases.
+- Application profiles and production validation behavior remain unchanged (prod still validates on migrate).

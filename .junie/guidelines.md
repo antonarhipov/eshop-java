@@ -55,6 +55,7 @@ When tasks are completed, update the progress tracking section at the bottom of 
 - Insert new tasks in the appropriate phase section
 - Assign sequential numbers within the phase
 - Include priority level and requirement mappings
+- Ensure each new task explicitly links to BOTH a plan item in docs/plan.md and related requirement(s) in docs/requirements.md
 - Update total task count at the bottom
 
 **Modifying Existing Tasks:**

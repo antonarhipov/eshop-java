@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Tea Shop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .container { max-width: 800px; margin: 40px auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .logout-btn { background: #b71c1c; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; }
+        .logout-btn:hover { background: #8a1515; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>My Account</h1>
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </div>
+    <p>Welcome, <strong th:text="${#httpServletRequest.remoteUser}">user</strong>!</p>
+    <p>This is a placeholder account page. In the future, you can show order history and profile details here.</p>
+    <p>
+        <a th:href="@{/}">← Back to Shop</a>
+    </p>
+</div>
+</body>
+</html>

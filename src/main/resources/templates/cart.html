@@ -215,6 +215,7 @@
 
         <!-- Cart Items -->
         <div th:if="${cart != null and not cart.items.empty}">
+            <input type="hidden" id="cartId" th:value="${cart.id}"/>
             <div class="cart-items">
                 <div th:each="item : ${cart.items}" class="cart-item">
                     <div class="item-info">
@@ -287,16 +288,16 @@
     </div>
 
     <script>
-        let cartId = getCookie('cartId');
-        
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return null;
+        function getCartId() {
+            const hidden = document.getElementById('cartId');
+            if (hidden && hidden.value) {
+                return hidden.value;
+            }
+            return sessionStorage.getItem('cartId') || new URLSearchParams(window.location.search).get('cartId');
         }
         
         function updateQuantity(variantId, quantity) {
+            const cartId = getCartId();
             if (!cartId) {
                 alert('Cart not found. Please refresh the page.');
                 return;
@@ -333,6 +334,7 @@
         }
         
         function removeItem(variantId) {
+            const cartId = getCartId();
             if (!cartId) {
                 alert('Cart not found. Please refresh the page.');
                 return;
@@ -358,12 +360,8 @@
         }
         
         function proceedToCheckout() {
-            if (!cartId) {
-                alert('Cart not found. Please refresh the page.');
-                return;
-            }
-            
-            window.location.href = `/checkout/${cartId}`;
+            // The checkout page resolves the cart from the HttpOnly cookie server-side
+            window.location.href = `/checkout`;
         }
     </script>
 </body>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login - Tea Shop</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .login-container { max-width: 400px; margin: 100px auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .login-form { display: flex; flex-direction: column; gap: 1rem; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 0.5rem; font-weight: bold; }
+        .form-group input { padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
+        .btn-login { background: #2c5530; color: white; padding: 0.75rem; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; }
+        .btn-login:hover { background: #1e3a21; }
+        .error-message { color: #d32f2f; background: #ffebee; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; }
+        .success-message { color: #2e7d32; background: #e8f5e8; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; }
+        .back-link { text-align: center; margin-top: 1rem; }
+        .back-link a { color: #2c5530; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h1>Login</h1>
+
+    <div th:if="${param.error}" class="error-message">
+        Invalid username or password.
+    </div>
+
+    <div th:if="${param.logout}" class="success-message">
+        You have been logged out successfully.
+    </div>
+
+    <form class="login-form" th:action="@{/login}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn-login">Login</button>
+    </form>
+
+    <div class="back-link">
+        <a th:href="@{/}">← Back to Shop</a>
+    </div>
+</div>
+</body>
+</html>

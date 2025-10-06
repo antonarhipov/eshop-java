@@ -1,6 +1,6 @@
 # Development Task List — Tea Shop Prototype
 
-Last updated: 2025-09-22
+Last updated: 2025-10-06
 
 This task list is derived from the implementation plan in docs/plan.md. Tasks are organized by development phases with checkboxes for tracking completion. Each task includes priority indicators (P0/P1/P2) and requirement mappings (R1-R19).
 
@@ -45,6 +45,9 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 - [x] 18. Add referential integrity constraints [P0] [R18]
 - [x] 19. Create seed data for testing (products, variants, lots) [P0] [R18]
 - [x] 20. Add basic auditing fields (createdAt, updatedAt) where needed [P0] [R18]
+- [x] 147. Create baseline migration and configure Flyway baseline (baseline-version=0, baseline-on-migrate) to support fresh DBs; document repair path for existing DB checksum mismatch. [P0] [R18]
+- [x] 148. Add reconciliation migration V4 to ensure orders contact/address columns exist (handles divergent V3) [P0] [R18]
+- [x] 149. Consolidate all DDL into baseline (V0) and neuter V1/V3/V4; document REPAIR requirement for existing DBs. [P0] [R18]
 
 ---
 
@@ -97,6 +100,7 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 - [x] 48. Implement item removal functionality [P0] [R4, R14]
 - [x] 49. Display cart totals with VAT breakdown [P0] [R4, R11, R14]
 - [x] 50. Add error handling for insufficient stock [P0] [R4, R14]
+- [x] 150. Fix cartId retrieval in Cart page (embed server-side cartId; stop reading HttpOnly cookie in JS) and correct checkout navigation (/checkout) [P0] [R4, R5, R14]
 
 ---
 
@@ -121,6 +125,11 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 - [x] 62. Add form validation for required fields [P0] [R5, R14]
 - [x] 63. Create Order Confirmation page [P0] [R14]
 - [x] 64. Display order summary and confirmation details [P0] [R14]
+- [x] 152. Fix checkout template binding for product title (replace item.variant.productTitle with item.variant.product.title) to prevent Thymeleaf error on /checkout. [P0] [R14]
+
+### Checkout – Customer Contact Details
+- [x] 144. Capture and persist customer contact details (full name, email, phone, shipping address: street1, street2, city, region/state, postalCode, country) on checkout submission; map through DTO → service → Order entity; treat phone as optional. [P0] [R5, R15]
+- [x] 145. Show customer's contact summary (name, email, address) on the Order Confirmation page (no phone display) to confirm data captured. [P1] [R14]
 
 ---
 
@@ -151,6 +160,7 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 - [x] 82. Implement PATCH /api/admin/orders/{id}/cancel [P0] [R9]
 - [x] 83. Add reservation release logic for canceled orders [P0] [R9, R10]
 - [x] 84. Add order state validation (prevent invalid transitions) [P0] [R9]
+- [ ] 146. Ensure Admin Orders list displays: Order #, Created, Customer (name + email), Total, PaymentStatus, FulfillmentStatus; default sort newest first; simple pagination (10/page). [P0] [R9, R14]
 
 ### Admin UI
 - [x] 85. Create Admin Login page [P0] [R14]
@@ -168,6 +178,7 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 - [ ] 91. Add audit logging for admin operations (who/when) [P0] [R13]
 - [ ] 92. Implement correlation IDs for error tracking [P0] [R12]
 - [ ] 93. Add input validation and sanitization [P0] [R15]
+- [x] 151. Implement user login for public site (/login, /account), with separate security chain and templates; placeholder in-memory USER. [P1] [R14, R15]
 
 ### Privacy & Legal Pages
 - [ ] 94. Create Privacy Policy static page [P1] [R15]
@@ -265,12 +276,12 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 
 ---
 
-**Total Tasks: 143**
-- **P0 (Critical):** 118 tasks
-- **P1 (Important):** 21 tasks  
+**Total Tasks: 152**
+- **P0 (Critical):** 125 tasks
+- **P1 (Important):** 23 tasks  
 - **P2 (Nice-to-have):** 4 tasks
 
 **Progress Tracking:**
-- Completed: 80/143 (56%)
-- In Progress: 0/143 (0%)
-- Not Started: 63/143 (44%)
+- Completed: 88/152 (58%)
+- In Progress: 0/152 (0%)
+- Not Started: 64/152 (42%)

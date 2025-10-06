@@ -20,7 +20,7 @@ class CheckoutController(
         @Valid @RequestBody request: CheckoutRequest
     ): ResponseEntity<OrderDto> {
         return try {
-            val order = checkoutService.submitCheckout(cartId, request.email, request.address)
+            val order = checkoutService.submitCheckout(cartId, request)
             val orderDto = OrderDto.fromEntity(order)
             ResponseEntity.ok(orderDto)
         } catch (e: IllegalArgumentException) {

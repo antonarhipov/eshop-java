@@ -182,19 +182,19 @@
         <!-- Statistics Overview -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number">--</div>
+                <div class="stat-number" id="totalProducts">--</div>
                 <div class="stat-label">Total Products</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">--</div>
+                <div class="stat-number" id="totalOrders">--</div>
                 <div class="stat-label">Total Orders</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">--</div>
+                <div class="stat-number" id="pendingOrders">--</div>
                 <div class="stat-label">Pending Orders</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">--</div>
+                <div class="stat-number" id="lowStockItems">--</div>
                 <div class="stat-label">Low Stock Items</div>
             </div>
         </div>
@@ -276,6 +276,18 @@
             if (o.status === 'CONFIRMED') return badge('CONFIRMED', 'status-shipped');
             return badge('PENDING', 'status-pending');
         }
+        async function loadStats() {
+            const res = await fetch('/api/admin/dashboard/stats');
+            if (!res.ok) {
+                console.error('Failed to load dashboard stats');
+                return;
+            }
+            const stats = await res.json();
+            document.getElementById('totalProducts').textContent = stats.totalProducts;
+            document.getElementById('totalOrders').textContent = stats.totalOrders;
+            document.getElementById('pendingOrders').textContent = stats.pendingOrders;
+            document.getElementById('lowStockItems').textContent = stats.lowStockItems;
+        }
         async function loadRecent() {
             const res = await fetch('/api/admin/orders?status=PENDING&size=5');
             if (!res.ok) {
@@ -300,7 +312,10 @@
                 </tr>
             `).join('');
         }
-        document.addEventListener('DOMContentLoaded', loadRecent);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadRecent();
+        });
     </script>
 </body>
 </html>

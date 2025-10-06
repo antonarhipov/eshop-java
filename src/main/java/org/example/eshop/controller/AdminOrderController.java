@@ -1,8 +1,13 @@
 package org.example.eshop.controller;
 
 import jakarta.validation.Valid;
+import org.example.eshop.dto.DashboardStatsResponse;
 import org.example.eshop.dto.MarkOrderPaidRequest;
 import org.example.eshop.dto.ShipOrderRequest;
+import org.example.eshop.entity.OrderStatus;
+import org.example.eshop.repository.OrderRepository;
+import org.example.eshop.repository.ProductRepository;
+import org.example.eshop.repository.VariantRepository;
 import org.example.eshop.service.AdminOrderService;
 import org.example.eshop.service.AuditLogService;
 import org.springframework.http.HttpStatus;
@@ -15,10 +20,35 @@ public class AdminOrderController {
 
     private final AdminOrderService adminOrderService;
     private final AuditLogService auditLogService;
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final VariantRepository variantRepository;
 
-    public AdminOrderController(AdminOrderService adminOrderService, AuditLogService auditLogService) {
+    public AdminOrderController(AdminOrderService adminOrderService, AuditLogService auditLogService,
+                                ProductRepository productRepository, OrderRepository orderRepository,
+                                VariantRepository variantRepository) {
         this.adminOrderService = adminOrderService;
         this.auditLogService = auditLogService;
+        this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
+        this.variantRepository = variantRepository;
+    }
+
+    @GetMapping("/dashboard/stats")
+    public ResponseEntity<DashboardStatsResponse> getDashboardStats() {
+        try {
+            long totalProducts = productRepository.count();
+            long totalOrders = orderRepository.count();
+            long pendingOrders = orderRepository.findByStatus(OrderStatus.PENDING).size();
+            long lowStockItems = variantRepository.findLowStock(10).size();
+
+            DashboardStatsResponse stats = new DashboardStatsResponse(
+                    totalProducts, totalOrders, pendingOrders, lowStockItems
+            );
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/orders")

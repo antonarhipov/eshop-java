@@ -201,9 +201,9 @@ class CheckoutService(
 
     private fun formatAddress(request: org.example.eshop.dto.CheckoutRequest): String {
         val parts = mutableListOf<String>()
-        val street = if (!request.street2.isNullOrBlank()) "${'$'}{request.street1}, ${'$'}{request.street2}" else request.street1
+        val street = if (!request.street2.isNullOrBlank()) "${request.street1}, ${request.street2}" else request.street1
         parts += street
-        parts += "${'$'}{request.city}, ${'$'}{request.region} ${'$'}{request.postalCode}"
+        parts += "${request.city}, ${request.region} ${request.postalCode}"
         parts += request.country
         return parts.joinToString(", ")
     }

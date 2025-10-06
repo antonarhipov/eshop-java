@@ -1,4 +1,4 @@
-# Implementation Plan — Tea Shop Prototype (Kotlin + Spring)
+# Implementation Plan — Tea Shop Prototype (Java + Spring)
 
 Last updated: 2025-09-22
 
@@ -21,7 +21,7 @@ Rationale: These align directly with prototype “Done Criteria” and enable me
 ## 2. Architecture Overview
 
 - Runtime:
-  - Spring Boot (Kotlin), REST controllers (JSON) for public/admin APIs. [R12, R13] [P0]
+  - Spring Boot (Java), REST controllers (JSON) for public/admin APIs. [R12, R13] [P0]
   - Server-rendered minimal UI using Spring MVC + Thymeleaf for core pages (Catalog, PDP, Cart, Checkout, Order Confirmation, Admin screens). Keeps stack simple; no SPA build complexity. [R14] [P0]
 - Persistence:
   - JPA/Hibernate with Flyway migrations. Start with PostgreSQL (or H2 for local/dev) as per compose.yaml. Entities per domain model. [R18] [P0]

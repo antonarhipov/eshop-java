@@ -29,6 +29,13 @@ public class AdminCatalogService {
         this.lotRepository = lotRepository;
     }
 
+    public java.util.List<AdminProductResponse> listProducts() {
+        var products = productRepository.findAll();
+        return products.stream()
+                .map(this::toAdminProductResponse)
+                .toList();
+    }
+
     // Product operations
     public AdminProductResponse createProduct(CreateProductRequest request) {
         if (productRepository.findBySlug(request.getSlug()) != null) {

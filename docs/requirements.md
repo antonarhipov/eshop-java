@@ -147,3 +147,12 @@ Requirements
   - WHEN creating, paying, and canceling orders THEN the system SHALL correctly reserve and release inventory.
   - WHEN tracking events THEN the system SHALL capture basic analytics for the main funnel.
   - WHEN using the application on common devices THEN the system SHALL present accessible and mobile-friendly pages.
+
+20. Admin Inventory Overview Page
+- User Story: As a system administrator, I want an inventory overview page so that I can observe the whole tea shop catalog at a glance.
+- Acceptance Criteria:
+  - WHEN an authenticated admin visits GET /admin/products THEN the system SHALL render a Products management page listing all products with columns: ID, Title, Slug, Type, Status, Variant Count, Lot Count.
+  - WHEN the page loads THEN the client SHALL fetch data via GET /api/admin/products and display the results in a table; an empty state SHALL be shown when no products exist.
+  - WHEN an unauthenticated user attempts to access /admin/products THEN the system SHALL redirect to /admin/login.
+  - WHEN an authenticated non-admin attempts to access admin pages or /api/admin endpoints THEN the system SHALL deny access (403) or redirect to login as configured.
+  - WHEN the API fails temporarily THEN the page SHALL show an empty state and SHALL not expose stack traces or sensitive details.

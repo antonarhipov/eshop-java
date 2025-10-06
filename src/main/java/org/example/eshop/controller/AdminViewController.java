@@ -22,4 +22,9 @@ public class AdminViewController {
     public String ordersPage() {
         return "admin/orders";
     }
+
+    @GetMapping("/products")
+    public String productsPage() {
+        return "admin/products";
+    }
 }

@@ -1,8 +1,8 @@
 # Development Task List — Tea Shop Prototype
 
-Last updated: 2025-10-06
+Last updated: 2025-10-07
 
-This task list is derived from the implementation plan in docs/plan.md. Tasks are organized by development phases with checkboxes for tracking completion. Each task includes priority indicators (P0/P1/P2) and requirement mappings (R1-R19).
+This task list is derived from the implementation plan in docs/plan.md. Tasks are organized by development phases with checkboxes for tracking completion. Each task includes priority indicators (P0/P1/P2) and requirement mappings (R1-R20).
 
 **Legend:**
 - `[ ]` = Not started
@@ -148,6 +148,7 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 - [x] 72. Add PATCH/DELETE endpoints for catalog entities [P0] [R8]
 - [x] 73. Enforce referential integrity in admin operations [P0] [R8]
 - [x] 74. Add validation for admin API requests [P0] [R8]
+- [x] 154. Implement GET /api/admin/products (list inventory) [P0] [R20]
 
 ### Admin Order Management
 - [x] 75. Implement GET /api/admin/orders (list all orders) [P0] [R9]
@@ -168,6 +169,9 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 - [x] 87. Create Admin Products management page [P0] [R14]
 - [x] 88. Create Admin Orders management page [P0] [R14]
 - [x] 89. Add order status update controls [P0] [R9, R14]
+- [x] 155. Add MVC route GET /admin/products to serve Products page [P0] [R20, R14]
+- [x] 156. Wire Products page to fetch and render inventory via GET /api/admin/products [P0] [R20]
+- [x] 153. Remove Inventory Overview and System Status widgets from Admin Dashboard [P1] [R14]
 
 ---
 
@@ -276,12 +280,12 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 
 ---
 
-**Total Tasks: 152**
-- **P0 (Critical):** 125 tasks
-- **P1 (Important):** 23 tasks  
+**Total Tasks: 156**
+- **P0 (Critical):** 128 tasks
+- **P1 (Important):** 24 tasks  
 - **P2 (Nice-to-have):** 4 tasks
 
 **Progress Tracking:**
-- Completed: 88/152 (58%)
-- In Progress: 0/152 (0%)
-- Not Started: 64/152 (42%)
+- Completed: 92/156 (59%)
+- In Progress: 0/156 (0%)
+- Not Started: 64/156 (41%)

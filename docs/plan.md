@@ -1,8 +1,8 @@
 # Implementation Plan — Tea Shop Prototype (Java + Spring)
 
-Last updated: 2025-09-22
+Last updated: 2025-10-07
 
-This plan operationalizes the requirements in docs/requirements.md and the functional specification in docs/spec.md. It describes the architecture, phased delivery, rationale, and a traceable mapping from plan items to requirements (R1–R19). Priorities are assigned as P0 (must-have for prototype readiness), P1 (important, near-term), and P2 (nice-to-have/stretch).
+This plan operationalizes the requirements in docs/requirements.md and the functional specification in docs/spec.md. It describes the architecture, phased delivery, rationale, and a traceable mapping from plan items to requirements (R1–R20). Priorities are assigned as P0 (must-have for prototype readiness), P1 (important, near-term), and P2 (nice-to-have/stretch).
 
 ---
 
@@ -71,8 +71,9 @@ Rationale: Matches requirement-level fields; versioning mitigates concurrency is
 - POST /api/checkout/{cartId}/submit: validate email/address, non-empty cart; create Order with paymentStatus=PENDING; reserve inventory (reservedQty += qty). Write "Order received" event to application log. [P0]
 - GET /api/orders/{orderNumber}: public order summary sans sensitive data; 404 on unknown. [P0]
 
-4.5 Admin [R8, R9, R13]
+4.5 Admin [R8, R9, R13, R20]
 - Catalog CRUD: POST /api/admin/products, /variants, /lots (and PATCH/DELETE as needed). Enforce referential integrity and validation. [P0]
+- Inventory overview UI: server-rendered /admin/products page that fetches GET /api/admin/products and lists all products with ID, Title, Slug, Type, Status, Variant Count, Lot Count. [P0]
 - Orders: PATCH mark-paid, ship, cancel with state checks; on Paid: stockQty -= qty; reservedQty -= qty; write "Payment received" event to log. On Ship: set fulfillmentStatus, trackingUrl; write "Order shipped" event to log. On Cancel (pre-payment): release reservations. [P0]
 
 4.6 Pricing, VAT, Shipping [R11]
@@ -207,6 +208,7 @@ Traceability: Tests named and tagged per requirement IDs for coverage mapping.
 - Accessibility & mobile (Phase 10) → R17 [P1]
 - Data model conformance (Phase 1) → R18 [P0]
 - Prototype readiness (All) → R19 [P0]
+- Admin inventory overview UI (Phase 6) → R20 [P0]
 
 ---
 

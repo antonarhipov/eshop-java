@@ -25,6 +25,17 @@ public class AdminCatalogController {
         this.auditLogService = auditLogService;
     }
 
+    @GetMapping("/products")
+    public ResponseEntity<?> listProducts() {
+        try {
+            var products = adminCatalogService.listProducts();
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("error", "Failed to load products"));
+        }
+    }
+
     @PostMapping("/products")
     public ResponseEntity<?> createProduct(@Valid @RequestBody CreateProductRequest request) {
         try {

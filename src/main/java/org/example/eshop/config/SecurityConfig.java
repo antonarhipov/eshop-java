@@ -55,6 +55,8 @@ public class SecurityConfig {
         http
                 .securityMatcher("/admin/**", "/api/admin/**")
                 .authorizeHttpRequests(authz -> authz
+                        // Allow the admin login page without authentication to avoid 403
+                        .requestMatchers("/admin/login").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
@@ -70,10 +72,6 @@ public class SecurityConfig {
                         .logoutUrl("/admin/logout")
                         .logoutSuccessUrl("/admin/login?logout=true")
                         .permitAll()
-                )
-                .csrf(csrf -> csrf
-                        // Keep CSRF enabled for admin operations; do not ignore admin endpoints
-                        .requireCsrfProtectionMatcher(request -> true)
                 );
         return http.build();
     }

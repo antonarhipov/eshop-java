@@ -353,6 +353,52 @@
     </div>
 
     <script>
+        // Render products table
+        function renderProducts(products) {
+            const tbody = document.getElementById('productsTableBody');
+            tbody.innerHTML = '';
+            if (!products || products.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <h3>No products found</h3>
+                            <p>Start by adding your first product to the catalog.</p>
+                            <button class="btn btn-primary" onclick="openCreateProductModal()">Add Product</button>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            for (const p of products) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${p.id}</td>
+                    <td>${p.title}</td>
+                    <td>${p.slug}</td>
+                    <td>${p.type}</td>
+                    <td>${p.status}</td>
+                    <td>${p.variantCount}</td>
+                    <td>${p.lotCount}</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary" title="Edit" disabled>Edit</button>
+                        <button class="btn btn-sm btn-danger" title="Delete" disabled>Delete</button>
+                    </td>`;
+                tbody.appendChild(tr);
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                const resp = await fetch('/api/admin/products', { headers: { 'Accept': 'application/json' } });
+                if (!resp.ok) throw new Error('Failed to load products');
+                const data = await resp.json();
+                renderProducts(data);
+            } catch (e) {
+                console.error(e);
+                renderProducts([]);
+            }
+        }
+
         // Modal functions
         function openCreateProductModal() {
             document.getElementById('modalTitle').textContent = 'Add New Product';
@@ -383,43 +429,19 @@
             document.getElementById('productSlug').value = slug;
         });
 
-        // Form submission
+        // Form submission (disabled for now, viewing-only)
         document.getElementById('productForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const formData = new FormData(this);
-            const productData = {
-                title: formData.get('title'),
-                slug: formData.get('slug'),
-                type: formData.get('type'),
-                status: formData.get('status'),
-                description: formData.get('description')
-            };
-
-            // Here you would make an API call to create the product
-            console.log('Creating product:', productData);
-            
-            // For now, just close the modal and show a success message
-            closeProductModal();
-            alert('Product created successfully! (This is a demo - actual API integration needed)');
+            alert('Creating products from UI is not enabled yet.');
         });
 
-        // Filter functions
+        // Filter functions (client-side placeholder)
         function applyFilters() {
-            const type = document.getElementById('filterType').value;
-            const status = document.getElementById('filterStatus').value;
-            const search = document.getElementById('filterSearch').value;
-            
-            console.log('Applying filters:', { type, status, search });
-            // Here you would make an API call to fetch filtered products
-            alert('Filters applied! (This is a demo - actual API integration needed)');
+            alert('Filters will be applied after API integration for filtering.');
         }
 
         // Load products on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            // Here you would make an API call to load products
-            console.log('Loading products...');
-        });
+        document.addEventListener('DOMContentLoaded', loadProducts);
     </script>
 </body>
 </html>

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Management - Tea Shop Admin</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <style>
         .admin-header {
             background: #2c5530;
@@ -476,161 +478,252 @@
 
     <script>
         let currentOrderId = null;
+        const ordersTableBody = document.getElementById('ordersTableBody');
+
+        function getCsrf() {
+            const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+            return { header, token };
+        }
+
+        function badge(text, cls) {
+            return `<span class="status-badge ${cls}">${text}</span>`;
+        }
+
+        function formatCurrency(amount) {
+            try {
+                return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(amount);
+            } catch (e) {
+                return `$${Number(amount).toFixed(2)}`;
+            }
+        }
+
+        function formatDate(iso) {
+            const d = new Date(iso);
+            return d.toLocaleString();
+        }
+
+        function displayOrderStatus(o) {
+            // Map composite fields to business statuses required by spec
+            if (o.status === 'CANCELLED') return badge('CANCELED', 'status-cancelled');
+            if (o.paymentStatus === 'FAILED') return badge('REJECTED', 'payment-failed');
+            if (o.fulfillmentStatus === 'FULFILLED') return badge('COMPLETED', 'payment-paid');
+            if (o.paymentStatus === 'PAID') return badge('IN PROGRESS', 'status-confirmed');
+            if (o.status === 'CONFIRMED') return badge('CONFIRMED', 'status-confirmed');
+            return badge('PENDING', 'status-pending');
+        }
+
+        function paymentBadge(status) {
+            const map = {
+                PENDING: 'payment-pending',
+                PAID: 'payment-paid',
+                FAILED: 'payment-failed',
+                REFUNDED: 'payment-pending'
+            };
+            return badge(status, map[status] || '');
+        }
+
+        function fulfillmentBadge(status) {
+            const map = {
+                UNFULFILLED: 'fulfillment-unfulfilled',
+                FULFILLED: 'fulfillment-fulfilled',
+                PARTIALLY_FULFILLED: 'fulfillment-unfulfilled'
+            };
+            return badge(status.replaceAll('_',' '), map[status] || '');
+        }
+
+        function actionsFor(o) {
+            const actions = [];
+            // View
+            actions.push(`<button class="btn btn-sm" onclick="viewOrder(${o.id})">View</button>`);
+            // Mark paid if unpaid and not canceled
+            if (o.paymentStatus !== 'PAID' && o.status !== 'CANCELLED') {
+                actions.push(`<button class="btn btn-sm btn-success" onclick="markAsPaid(${o.id})">Mark Paid</button>`);
+            }
+            // Ship if paid and not fulfilled/canceled
+            if (o.paymentStatus === 'PAID' && o.fulfillmentStatus !== 'FULFILLED' && o.status !== 'CANCELLED') {
+                actions.push(`<button class="btn btn-sm btn-primary" onclick="shipOrder(${o.id})">Ship</button>`);
+            }
+            // Cancel if not paid/fulfilled and not canceled
+            if (o.paymentStatus !== 'PAID' && o.fulfillmentStatus !== 'FULFILLED' && o.status !== 'CANCELLED') {
+                actions.push(`<button class="btn btn-sm btn-danger" onclick="cancelOrder(${o.id})">Cancel</button>`);
+            }
+            return `<div class="actions">${actions.join('')}</div>`;
+        }
+
+        async function loadOrders(page = 0) {
+            const params = new URLSearchParams(window.location.search);
+            const status = document.getElementById('filterStatus').value || params.get('status') || '';
+            const paymentStatus = document.getElementById('filterPaymentStatus').value || '';
+            const fulfillmentStatus = document.getElementById('filterFulfillmentStatus').value || '';
+            const size = 50;
+            const qs = new URLSearchParams({ page, size });
+            if (status) qs.set('status', status);
+            if (paymentStatus) qs.set('paymentStatus', paymentStatus);
+            if (fulfillmentStatus) qs.set('fulfillmentStatus', fulfillmentStatus);
+
+            const res = await fetch(`/api/admin/orders?${qs.toString()}`);
+            if (!res.ok) {
+                ordersTableBody.innerHTML = `<tr><td colspan="8" class="empty-state">Failed to load orders</td></tr>`;
+                return;
+            }
+            const data = await res.json();
+            renderOrders(data.orders || []);
+        }
+
+        function renderOrders(orders) {
+            if (!orders.length) {
+                ordersTableBody.innerHTML = `<tr><td colspan="8" class="empty-state"><h3>No orders found</h3><p>Orders will appear here once customers start placing orders.</p></td></tr>`;
+                return;
+            }
+            const rows = orders.map(o => `
+                <tr>
+                    <td>${o.number}</td>
+                    <td>${o.email}</td>
+                    <td>${formatCurrency(o.total)}</td>
+                    <td>${displayOrderStatus(o)}</td>
+                    <td>${paymentBadge(o.paymentStatus)}</td>
+                    <td>${fulfillmentBadge(o.fulfillmentStatus)}</td>
+                    <td>${formatDate(o.createdAt)}</td>
+                    <td>${actionsFor(o)}</td>
+                </tr>
+            `).join('');
+            ordersTableBody.innerHTML = rows;
+        }
 
         // Modal functions
-        function viewOrder(orderId) {
+        async function viewOrder(orderId) {
             currentOrderId = orderId;
-            // Here you would make an API call to get order details
-            console.log('Viewing order:', orderId);
-            
-            // Mock order details
+            const res = await fetch(`/api/admin/orders/${orderId}`);
+            if (!res.ok) {
+                alert('Failed to load order');
+                return;
+            }
+            const o = await res.json();
+            const items = (o.items || []).map(it => `
+                <div class="order-item">
+                    <span>${it.titleSnapshot}${it.sku ? ' ('+it.sku+')' : ''}</span>
+                    <span>${it.qty} x ${formatCurrency(it.priceSnapshot)} = ${formatCurrency(it.lineTotal)}</span>
+                </div>
+            `).join('');
             const orderDetails = `
                 <div class="order-details">
-                    <h4>Order #ORD-${orderId}</h4>
-                    <p><strong>Customer:</strong> customer@example.com</p>
-                    <p><strong>Address:</strong> 123 Main St, City, Country</p>
-                    <p><strong>Status:</strong> <span class="status-badge status-pending">Pending</span></p>
-                    <p><strong>Payment:</strong> <span class="status-badge payment-pending">Pending</span></p>
-                    <p><strong>Fulfillment:</strong> <span class="status-badge fulfillment-unfulfilled">Unfulfilled</span></p>
+                    <h4>Order #${o.number}</h4>
+                    <p><strong>Customer:</strong> ${o.email}</p>
+                    <p><strong>Address:</strong> ${o.address}</p>
+                    <p><strong>Status:</strong> ${displayOrderStatus(o)}</p>
+                    <p><strong>Payment:</strong> ${paymentBadge(o.paymentStatus)}</p>
+                    <p><strong>Fulfillment:</strong> ${fulfillmentBadge(o.fulfillmentStatus)}</p>
                 </div>
-                
                 <div class="order-items">
                     <h4>Items</h4>
-                    <div class="order-item">
-                        <span>Sample Tea - 25g</span>
-                        <span>2x $15.00 = $30.00</span>
-                    </div>
+                    ${items}
                 </div>
-                
                 <div class="order-totals">
-                    <div class="total-row">
-                        <span>Subtotal:</span>
-                        <span>$30.00</span>
-                    </div>
-                    <div class="total-row">
-                        <span>Tax:</span>
-                        <span>$6.00</span>
-                    </div>
-                    <div class="total-row">
-                        <span>Shipping:</span>
-                        <span>$5.00</span>
-                    </div>
-                    <div class="total-row final">
-                        <span>Total:</span>
-                        <span>$41.00</span>
-                    </div>
-                </div>
-            `;
-            
+                    <div class="total-row"><span>Subtotal:</span><span>${formatCurrency(o.subtotal)}</span></div>
+                    <div class="total-row"><span>Tax:</span><span>${formatCurrency(o.tax)}</span></div>
+                    <div class="total-row"><span>Shipping:</span><span>${formatCurrency(o.shipping)}</span></div>
+                    <div class="total-row final"><span>Total:</span><span>${formatCurrency(o.total)}</span></div>
+                </div>`;
             document.getElementById('orderDetails').innerHTML = orderDetails;
             document.getElementById('orderModal').style.display = 'block';
         }
 
-        function markAsPaid(orderId) {
+        async function markAsPaid(orderId) {
             currentOrderId = orderId;
-            const orderSummary = `<p><strong>Order #ORD-${orderId}</strong> - Total: $41.00</p>`;
-            document.getElementById('markPaidOrderDetails').innerHTML = orderSummary;
+            const res = await fetch(`/api/admin/orders/${orderId}`);
+            const o = res.ok ? await res.json() : { number: orderId, total: 0 };
+            const summary = `<p><strong>Order #${o.number}</strong> - Total: ${formatCurrency(o.total)}</p>`;
+            document.getElementById('markPaidOrderDetails').innerHTML = summary;
             document.getElementById('markPaidModal').style.display = 'block';
         }
 
         function shipOrder(orderId) {
             currentOrderId = orderId;
-            const orderSummary = `<p><strong>Order #ORD-${orderId}</strong> - Ready to ship</p>`;
-            document.getElementById('shipOrderDetails').innerHTML = orderSummary;
+            document.getElementById('shipOrderDetails').innerHTML = `<p><strong>Order #${orderId}</strong> - Ready to ship</p>`;
             document.getElementById('shipOrderModal').style.display = 'block';
         }
 
         function cancelOrder(orderId) {
             currentOrderId = orderId;
-            const orderSummary = `<p><strong>Order #ORD-${orderId}</strong> - This action cannot be undone</p>`;
-            document.getElementById('cancelOrderDetails').innerHTML = orderSummary;
+            document.getElementById('cancelOrderDetails').innerHTML = `<p><strong>Order #${orderId}</strong> - This action cannot be undone</p>`;
             document.getElementById('cancelOrderModal').style.display = 'block';
         }
 
-        function confirmMarkPaid() {
-            if (currentOrderId) {
-                // Here you would make an API call to mark order as paid
-                console.log('Marking order as paid:', currentOrderId);
-                alert(`Order #ORD-${currentOrderId} marked as paid! (Demo - API integration needed)`);
-                closeMarkPaidModal();
-                refreshOrders();
+        async function confirmMarkPaid() {
+            if (!currentOrderId) return;
+            const { header, token } = getCsrf();
+            const res = await fetch(`/api/admin/orders/${currentOrderId}/mark-paid`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', [header]: token },
+                body: JSON.stringify({})
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || 'Failed to mark as paid');
+                return;
             }
+            closeMarkPaidModal();
+            await loadOrders();
         }
 
-        function confirmCancelOrder() {
-            if (currentOrderId) {
-                // Here you would make an API call to cancel order
-                console.log('Cancelling order:', currentOrderId);
-                alert(`Order #ORD-${currentOrderId} cancelled! (Demo - API integration needed)`);
-                closeCancelOrderModal();
-                refreshOrders();
+        async function confirmCancelOrder() {
+            if (!currentOrderId) return;
+            const { header, token } = getCsrf();
+            const res = await fetch(`/api/admin/orders/${currentOrderId}/cancel`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', [header]: token },
+                body: JSON.stringify({})
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || 'Failed to cancel order');
+                return;
             }
+            closeCancelOrderModal();
+            await loadOrders();
         }
+
+        // Ship order form submission
+        document.getElementById('shipOrderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const trackingUrl = document.getElementById('trackingUrl').value;
+            if (!currentOrderId) return;
+            const { header, token } = getCsrf();
+            const res = await fetch(`/api/admin/orders/${currentOrderId}/ship`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', [header]: token },
+                body: JSON.stringify({ trackingUrl })
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.error || 'Failed to ship order');
+                return;
+            }
+            closeShipOrderModal();
+            (document.getElementById('trackingUrl').value = '');
+            await loadOrders();
+        });
 
         // Modal close functions
-        function closeOrderModal() {
-            document.getElementById('orderModal').style.display = 'none';
-        }
-
-        function closeMarkPaidModal() {
-            document.getElementById('markPaidModal').style.display = 'none';
-        }
-
-        function closeShipOrderModal() {
-            document.getElementById('shipOrderModal').style.display = 'none';
-        }
-
-        function closeCancelOrderModal() {
-            document.getElementById('cancelOrderModal').style.display = 'none';
-        }
+        function closeOrderModal() { document.getElementById('orderModal').style.display = 'none'; }
+        function closeMarkPaidModal() { document.getElementById('markPaidModal').style.display = 'none'; }
+        function closeShipOrderModal() { document.getElementById('shipOrderModal').style.display = 'none'; }
+        function closeCancelOrderModal() { document.getElementById('cancelOrderModal').style.display = 'none'; }
 
         // Close modals when clicking outside
         window.onclick = function(event) {
             const modals = ['orderModal', 'markPaidModal', 'shipOrderModal', 'cancelOrderModal'];
-            modals.forEach(modalId => {
-                const modal = document.getElementById(modalId);
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
+            modals.forEach(id => { const m = document.getElementById(id); if (event.target === m) m.style.display = 'none'; });
         }
-
-        // Ship order form submission
-        document.getElementById('shipOrderForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const trackingUrl = document.getElementById('trackingUrl').value;
-            
-            if (currentOrderId) {
-                // Here you would make an API call to ship order
-                console.log('Shipping order:', currentOrderId, 'with tracking:', trackingUrl);
-                alert(`Order #ORD-${currentOrderId} shipped! (Demo - API integration needed)`);
-                closeShipOrderModal();
-                refreshOrders();
-            }
-        });
 
         // Filter and refresh functions
-        function applyFilters() {
-            const status = document.getElementById('filterStatus').value;
-            const paymentStatus = document.getElementById('filterPaymentStatus').value;
-            const fulfillmentStatus = document.getElementById('filterFulfillmentStatus').value;
-            
-            console.log('Applying filters:', { status, paymentStatus, fulfillmentStatus });
-            // Here you would make an API call to fetch filtered orders
-            alert('Filters applied! (Demo - API integration needed)');
-        }
-
-        function refreshOrders() {
-            console.log('Refreshing orders...');
-            // Here you would make an API call to reload orders
-            alert('Orders refreshed! (Demo - API integration needed)');
-        }
+        function applyFilters() { loadOrders(0); }
+        function refreshOrders() { loadOrders(0); }
 
         // Load orders on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Here you would make an API call to load orders
-            console.log('Loading orders...');
+            loadOrders();
         });
     </script>
 </body>

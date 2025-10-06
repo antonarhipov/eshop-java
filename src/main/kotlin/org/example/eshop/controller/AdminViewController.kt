@@ -17,4 +17,9 @@ class AdminViewController {
     fun dashboardPage(): String {
         return "admin/dashboard"
     }
+
+    @GetMapping("/orders")
+    fun ordersPage(): String {
+        return "admin/orders"
+    }
 }

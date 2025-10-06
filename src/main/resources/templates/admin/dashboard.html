@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Tea Shop</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <style>
         .admin-header {
             background: #2c5530;
@@ -260,10 +262,10 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="recentOrdersBody">
                     <tr>
                         <td colspan="7" style="text-align: center; color: #666; padding: 2rem;">
-                            No recent orders to display. Orders will appear here once customers start placing orders.
+                            Loading pending orders...
                         </td>
                     </tr>
                 </tbody>
@@ -274,5 +276,51 @@
             </div>
         </div>
     </div>
+    <script>
+        const recentOrdersBody = document.getElementById('recentOrdersBody');
+        function badge(text, cls) { return `<span class="status-badge ${cls}">${text}</span>`; }
+        function formatCurrency(amount) {
+            try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(amount); }
+            catch(e) { return `$${Number(amount).toFixed(2)}`; }
+        }
+        function formatDate(iso) { const d = new Date(iso); return d.toLocaleString(); }
+        function paymentBadge(status) {
+            const map = { PENDING:'status-pending', PAID:'status-paid', FAILED:'status-cancelled' };
+            return badge(status, map[status] || '');
+        }
+        function displayStatus(o) {
+            if (o.status === 'CANCELLED') return badge('CANCELED', 'status-cancelled');
+            if (o.paymentStatus === 'FAILED') return badge('REJECTED', 'status-cancelled');
+            if (o.fulfillmentStatus === 'FULFILLED') return badge('COMPLETED', 'status-paid');
+            if (o.paymentStatus === 'PAID') return badge('IN PROGRESS', 'status-paid');
+            if (o.status === 'CONFIRMED') return badge('CONFIRMED', 'status-shipped');
+            return badge('PENDING', 'status-pending');
+        }
+        async function loadRecent() {
+            const res = await fetch('/api/admin/orders?status=PENDING&size=5');
+            if (!res.ok) {
+                recentOrdersBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#666;padding:2rem;">Failed to load recent orders</td></tr>`;
+                return;
+            }
+            const data = await res.json();
+            const orders = data.orders || [];
+            if (!orders.length) {
+                recentOrdersBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#666;padding:2rem;">No pending orders.</td></tr>`;
+                return;
+            }
+            recentOrdersBody.innerHTML = orders.map(o => `
+                <tr>
+                    <td>${o.number}</td>
+                    <td>${o.email}</td>
+                    <td>${formatCurrency(o.total)}</td>
+                    <td>${displayStatus(o)}</td>
+                    <td>${paymentBadge(o.paymentStatus)}</td>
+                    <td>${formatDate(o.createdAt)}</td>
+                    <td><a href="/admin/orders?status=PENDING" class="btn btn-secondary btn-sm">Review</a></td>
+                </tr>
+            `).join('');
+        }
+        document.addEventListener('DOMContentLoaded', loadRecent);
+    </script>
 </body>
 </html>
